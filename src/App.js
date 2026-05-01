@@ -48,7 +48,7 @@ const App = () => {
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 0.9);
       link.click();
-      alert("JPEG သိမ်းဆည်းပြီး Firebase မှာ မှတ်တမ်းတင်ပြီးပါပြီ ကိုကို!");
+      alert("JPEG သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
   };
 
@@ -80,7 +80,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Address Info Rows */}
+              {/* Info Row Address */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -93,7 +93,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Excel Style Table with Solid Lines only */}
+              {/* Table - Fully Solid Grid Like Excel */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -108,18 +108,18 @@ const App = () => {
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
-                      <td style={styles.tdCenter}>{i+1}</td>
-                      <td style={styles.tdDesc}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.tdUnit}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.tdQty}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.tdPrice}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdBorderCenter}>{i+1}</td>
+                      <td style={styles.tdBorder}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.tdBorder}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.tdBorder}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.tdBorder}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
                       <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* Customer & Totals */}
+              {/* Footer Layout */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
@@ -161,14 +161,14 @@ const LoginSection = ({ onLogin }) => (
 );
 
 const styles = {
-  appContainer: { backgroundColor: '#cbd5e1', minHeight: '100vh', overflowX: 'hidden' },
-  tabBar: { display: 'flex', backgroundColor: '#1e293b', padding: '10px', gap: '5px', position: 'sticky', top: 0, zIndex: 100 },
-  tab: { padding: '8px 15px', color: 'white', border: 'none', background: 'transparent', fontSize: '14px', cursor:'pointer' },
+  appContainer: { backgroundColor: '#cbd5e1', minHeight: '100vh' },
+  tabBar: { display: 'flex', backgroundColor: '#1e293b', padding: '10px', gap: '5px' },
+  tab: { padding: '8px 15px', color: 'white', border: 'none', background: 'transparent', cursor:'pointer' },
   activeTab: { padding: '8px 15px', color: 'white', borderBottom: '3px solid #059669', background: '#334155', fontWeight: 'bold' },
   logoutTab: { marginLeft: 'auto', padding: '8px 15px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', fontSize: '12px', cursor:'pointer' },
   scrollWrapper: { width: '100vw', overflowX: 'auto', padding: '20px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto', padding: '0 20px' },
-  a4Sheet: { width: '230mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 0 15px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' },
+  a4Sheet: { width: '230mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', display: 'flex', flexDirection: 'column' },
   header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #059669', paddingBottom: '10px', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '20px', alignItems: 'center' },
   logoCircle: { width: '80px', height: '80px', border: '2px solid #059669', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
@@ -186,32 +186,28 @@ const styles = {
   value: { flex: 1 },
   metaBox: { flex: 1, textAlign: 'right' },
   invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '6px', textAlign: 'center', fontWeight: 'bold' },
-  invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
+  invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
 
-  // Table Styles - အားလုံးကို မျဉ်းအဖြောင့် Solid Borders သာသုံးထားသည်
+  // Table - Full Solid Lines Grid
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '45px', border: '1.5px solid #000', padding: '10px' },
-  thDesc: { border: '1.5px solid #000', padding: '10px' }, // Widest column
-  thUnit: { width: '90px', border: '1.5px solid #000' },
-  thQty: { width: '90px', border: '1.5px solid #000' },
-  thPrice: { width: '115px', border: '1.5px solid #000' },
-  thTotal: { width: '145px', border: '1.5px solid #000' },
+  thDesc: { border: '1.5px solid #000', padding: '10px' },
+  thUnit: { width: '80px', border: '1.5px solid #000' },
+  thQty: { width: '80px', border: '1.5px solid #000' },
+  thPrice: { width: '110px', border: '1.5px solid #000' },
+  thTotal: { width: '140px', border: '1.5px solid #000' },
 
-  tdCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
-  tdDesc: { border: '1.5px solid #000', padding: 0 },
-  tdUnit: { border: '1.5px solid #000', padding: 0 },
-  tdQty: { border: '1.5px solid #000', padding: 0 },
-  tdPrice: { border: '1.5px solid #000', padding: 0 },
+  tdBorder: { border: '1.5px solid #000', padding: 0 },
+  tdBorderCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
   tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
-
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
 
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
   customerBox: { flex: 1.5 },
-  dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px', marginLeft: '5px' },
+  dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px' },
   summaryBox: { flex: 1 },
   totalRow: { backgroundColor: '#059669', color: 'white', padding: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' },
   summaryRow: { backgroundColor: '#d1fae5', padding: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderBottom: '2px solid white' },
@@ -227,8 +223,8 @@ const styles = {
   loginInput: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '8px', outline:'none' },
   saveBtnSmall: { width: '100%', padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor:'pointer' },
   dashboardArea: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
-  historyList: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' },
-  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor:'pointer' },
+  historyList: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
 };
 
 export default App;

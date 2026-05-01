@@ -3,6 +3,9 @@ import { db } from './firebase-config';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import html2canvas from 'html2canvas';
 
+// 📸 1. Logo ကို import လုပ်မယ် (file နာမည် oasis-logo.png နဲ့ src ထဲသိမ်းပါ)
+import OasisLogo from './oasis-logo.png';
+
 const App = () => {
   const [activeTab, setActiveTab] = useState('invoice');
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
@@ -57,9 +60,25 @@ const App = () => {
 
   return (
     <div style={styles.appContainer}>
+      {/* 2. Rotate Animation အတွက် CSS ထည့်မယ် */}
+      <style>{`
+        .rotate-logo {
+          transition: transform 0.5s ease;
+          transform: rotate(-20deg); /* 📸 Default Rotate */
+          filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2));
+        }
+        .rotate-logo:hover {
+          transform: rotate(0deg); /* Mouse တင်ရင် ပြန်တည့်မယ် */
+        }
+        .nav-logo { width: 30px; height: 30px; border-radius: 50%; }
+      `}</style>
+
       {/* Navbar Section */}
       <div className="no-print" style={styles.navBar}>
-        <div style={styles.navBrand}>OASIS SYSTEM</div>
+        <div style={{display:'flex', alignItems:'center', gap:'10px'}}>
+          <img src={OasisLogo} alt="NavLogo" style={styles.navLogo} /> {/* Nav Bar Logo */}
+          <div style={styles.navBrand}>OASIS SYSTEM</div>
+        </div>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>Create Invoice</button>
           <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.navBtnActive : styles.navBtn}>History</button>
@@ -71,10 +90,11 @@ const App = () => {
         <div style={styles.scrollWrapper}>
           <div style={styles.invoiceOuter}>
             <div ref={invoiceRef} style={styles.a4Sheet}>
-              {/* Header Design */}
+              {/* Header Design with Rotated Logo */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
-                  <div style={styles.logoCircle}>Logo</div>
+                  {/* 📸 3. ပုံကို Rotate လုပ်ပြီး Header မှာ သုံးထားတယ် */}
+                  <img src={OasisLogo} alt="OasisLogo" className="rotate-logo" style={styles.logoImage} />
                   <div style={styles.bizInfo}>
                     <h1 style={styles.bizTitle}>Ko Htay Aung <span style={styles.bizSub}>( Oasis )</span></h1>
                     <p style={styles.serviceText}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales and Services</p>
@@ -129,7 +149,7 @@ const App = () => {
                   <div style={styles.footerInfoRow}><span style={styles.fLabel}>Address</span> <span style={styles.colon}>:</span> <input style={styles.footerInput} onChange={e=>setCustomer({...customer, address: e.target.value})} /></div>
                 </div>
                 <div style={styles.summaryBox}>
-                  <div style={styles.summaryRowMain}><span>Total Amount</span> <span>{formatNum(totalAmount)}</span></div>
+                  <div style={styles.totalRowMain}><span>Total Amount</span> <span>{formatNum(totalAmount)}</span></div>
                   <div style={styles.summaryRow}><span>Discount</span> <input style={styles.summaryInput} type="text" value={formatNum(discount)} onChange={e=>setDiscount(Number(e.target.value.replace(/,/g, '')))} /></div>
                   <div style={styles.summaryRowLast}><span>Balance</span> <span>{formatNum(balance)}</span></div>
                 </div>
@@ -151,7 +171,11 @@ const App = () => {
         </div>
       ) : (
         <div style={styles.dashboardArea}>
-          <h2 style={styles.dashTitle}>Invoice Records</h2>
+          <div style={{display:'flex', alignItems:'center', gap:'15px', borderBottom: '2px solid #10b981', paddingBottom: '10px'}}>
+             {/* Dashboard Header Logo */}
+             <img src={OasisLogo} alt="DashLogo" style={{width:'50px', height:'50px', borderRadius:'50%', border:'2px solid #10b981'}} />
+             <h2 style={{color: '#064e3b', margin:0}}>Invoice Records</h2>
+          </div>
           <div style={styles.historyGrid}>
             {history.map(item => (
               <div key={item.id} style={styles.historyCard}>
@@ -170,17 +194,21 @@ const App = () => {
 };
 
 const LoginSection = ({ onLogin }) => (
-  <div style={styles.loginBg}><div style={styles.loginCard}><div style={styles.logoCircleLarge}>OASIS</div><h3>SYSTEM LOGIN</h3><input id="u" placeholder="Username" style={styles.loginInput} /><input id="p" type="password" placeholder="Password" style={styles.loginInput} /><button onClick={() => { if(document.getElementById('u').value.trim() === "Oasis" && document.getElementById('p').value === "Oasis@2000") { localStorage.setItem("isLoggedIn", "true"); onLogin(); } }} style={styles.loginBtnPrimary}>Login</button></div></div>
+  <div style={styles.loginBg}><div style={styles.loginCard}>
+    {/* 📸 Login Logo */}
+    <img src={OasisLogo} alt="LoginLogo" style={styles.logoCircleLarge} />
+    <h3>SYSTEM LOGIN</h3><input id="u" placeholder="Username" style={styles.loginInput} /><input id="p" type="password" placeholder="Password" style={styles.loginInput} /><button onClick={() => { if(document.getElementById('u').value.trim() === "Oasis" && document.getElementById('p').value === "Oasis@2000") { localStorage.setItem("isLoggedIn", "true"); onLogin(); } }} style={styles.loginBtnPrimary}>Login</button></div></div>
 );
 
 const styles = {
   appContainer: { backgroundColor: '#f0f2f5', minHeight: '100vh', fontFamily: 'sans-serif' },
   navBar: { display: 'flex', alignItems: 'center', backgroundColor: '#065f46', padding: '10px 20px', color: 'white', position: 'sticky', top: 0, zIndex: 1000 },
-  navBrand: { fontSize: '18px', fontWeight: 'bold', marginRight: '30px' },
-  navLinks: { display: 'flex', gap: '10px', flex: 1 },
+  navBrand: { fontSize: '18px', fontWeight: 'bold' },
+  navLinks: { display: 'flex', gap: '10px', flex: 1, justifyContent:'center' },
   navBtn: { padding: '8px 15px', color: '#a7f3d0', border: 'none', background: 'transparent', cursor: 'pointer', borderRadius: '4px' },
   navBtnActive: { padding: '8px 15px', color: 'white', border: 'none', background: '#047857', cursor: 'pointer', borderRadius: '4px', fontWeight: 'bold' },
   logoutBtn: { padding: '8px 15px', background: '#dc2626', color: 'white', border: 'none', borderRadius: '4px', fontSize: '12px' },
+  navLogo: { width: '30px', height: '30px', borderRadius: '50%' },
   
   scrollWrapper: { width: '100vw', overflowX: 'auto', padding: '30px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto', padding: '0 20px' },
@@ -188,11 +216,11 @@ const styles = {
   
   header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #10b981', paddingBottom: '15px', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '20px', alignItems: 'center' },
-  logoCircle: { width: '70px', height: '70px', border: '2px solid #10b981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981', fontWeight: 'bold' },
+  logoImage: { width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #10b981', objectFit: 'cover' }, // 📸 Logo Style
   bizTitle: { fontSize: '24px', margin: 0, color: '#064e3b' },
   bizSub: { fontSize: '18px', color: '#059669' },
   serviceText: { margin: '5px 0 0 0', fontSize: '12px', color: '#059669', maxWidth: '400px' },
-  invoiceBadge: { backgroundColor: '#10b981', color: 'white', padding: '8px 40px', fontSize: '22px', fontWeight: 'bold', transform: 'skewX(-15deg)' },
+  invoiceBadge: { backgroundColor: '#10b981', color: 'white', padding: '8px 40px', fontSize: '22px', fontWeight: 'bold', transform: 'skewX(-15deg)', height:'40px', display:'flex', alignItems:'center' },
   
   infoGrid: { display: 'flex', justifyContent: 'space-between', marginBottom: '25px' },
   addressBox: { flex: 2 },
@@ -201,10 +229,9 @@ const styles = {
   colon: { width: '15px', textAlign: 'center' },
   val: { flex: 1, color: '#4b5563' },
   metaBox: { flex: 1, textAlign: 'right' },
-  invNoDisplay: { background: '#065f46', color: 'white', padding: '5px 15px', borderRadius: '4px', fontSize: '14px' },
+  invNoDisplay: { background: '#065f46', color: 'white', padding: '5px 15px', borderRadius: '4px', fontSize: '14px', display:'inline-block' },
   dateDisplay: { marginTop: '5px', fontSize: '12px', color: '#6b7280' },
 
-  // The requested Excel Style Grid
   excelTable: { width: '100%', borderCollapse: 'collapse', border: '2px solid #000', marginBottom: '30px' },
   tableHeader: { backgroundColor: '#10b981', color: 'white' },
   thNo: { width: '40px', border: '1.5px solid #000', padding: '10px' },
@@ -243,7 +270,6 @@ const styles = {
   mainSaveBtn: { width: '210mm', padding: '15px', backgroundColor: '#10b981', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', letterSpacing: '1px' },
   
   dashboardArea: { padding: '30px', maxWidth: '1000px', margin: '0 auto' },
-  dashTitle: { borderBottom: '2px solid #10b981', color: '#065f46', paddingBottom: '10px' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px', marginTop: '20px' },
   historyCard: { background: 'white', padding: '15px', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', borderLeft: '4px solid #10b981' },
   cardHeader: { fontWeight: 'bold', color: '#10b981', borderBottom: '1px solid #f3f4f6', paddingBottom: '5px', marginBottom: '10px' },
@@ -251,10 +277,10 @@ const styles = {
   
   loginBg: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#ecfdf5' },
   loginCard: { background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)', width: '350px', textAlign: 'center' },
-  logoCircleLarge: { width: '80px', height: '80px', borderRadius: '50%', background: '#10b981', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontWeight: 'bold', fontSize: '20px' },
+  logoCircleLarge: { width: '80px', height: '80px', borderRadius: '50%', objectFit:'cover', margin: '0 auto 20px', border:'2px solid #10b981' }, // 📸 Login Logo Style
   loginInput: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #d1fae5', borderRadius: '8px', outline: 'none' },
   loginBtnPrimary: { width: '100%', padding: '12px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }
 };
 
 export default App;
-                
+        

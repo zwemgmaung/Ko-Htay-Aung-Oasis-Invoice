@@ -27,7 +27,7 @@ const App = () => {
 
   const updateRow = (index, field, value) => {
     const newRows = [...rows];
-    const cleanValue = field === "desc" || field === "unit" ? value : Number(value.replace(/,/g, ''));
+    const cleanValue = (field === "desc" || field === "unit") ? value : Number(value.replace(/,/g, ''));
     newRows[index][field] = cleanValue;
     setRows(newRows);
   };
@@ -35,16 +35,13 @@ const App = () => {
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
 
-  const formatNum = (num) => {
-    if (num === 0 || !num) return "0";
-    return num.toLocaleString();
-  };
+  const formatNum = (num) => (num === 0 || !num) ? "0" : num.toLocaleString();
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
       await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
-      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true, logging: false });
+      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo || 'New'}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 0.9);
@@ -94,7 +91,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with Vertical Dotted Line from Row 1 to 14 */}
+              {/* Corrected Table Layout as per Screenshot */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -109,12 +106,11 @@ const App = () => {
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
-                      <td style={styles.tdNo}>{i+1}</td>
-                      {/* Vertical Dotted Line applied here */}
-                      <td style={styles.tdDescDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.tdCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.tdCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.tdCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdCenter}>{i+1}</td>
+                      <td style={styles.td}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
                       <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
@@ -191,19 +187,18 @@ const styles = {
   invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '6px', textAlign: 'center', fontWeight: 'bold' },
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
-  mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1px solid #000' },
+  // Table Borders as per your screenshot
+  mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
-  thNo: { width: '40px', border: '1px solid #000', padding: '10px' },
-  thDesc: { flex: 1, border: '1px solid #000', padding: '10px' },
-  thUnit: { width: '90px', border: '1px solid #000' }, 
-  thQty: { width: '90px', border: '1px solid #000' },
-  thPrice: { width: '110px', border: '1px solid #000' },
-  thTotal: { width: '140px', border: '1px solid #000' },
-  // Vertical Dotted Line အတွက် အထူး style
-  tdDescDotted: { border: '1px solid #000', borderRight: '1px dotted #000', padding: 0 },
-  tdNo: { border: '1px solid #000', textAlign: 'center', fontSize: '13px' },
-  tdCenter: { border: '1px solid #000', textAlign: 'center', fontSize: '13px', padding: 0 },
-  tdTotalValue: { border: '1px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
+  thNo: { width: '40px', border: '1.5px solid #000', padding: '10px' },
+  thDesc: { flex: 1, border: '1.5px solid #000', padding: '10px' },
+  thUnit: { width: '90px', border: '1.5px solid #000' }, 
+  thQty: { width: '90px', border: '1.5px solid #000' },
+  thPrice: { width: '110px', border: '1.5px solid #000' },
+  thTotal: { width: '140px', border: '1.5px solid #000' },
+  td: { border: '1.5px solid #000', padding: 0 },
+  tdCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
+  tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
@@ -229,4 +224,4 @@ const styles = {
 };
 
 export default App;
-                
+        

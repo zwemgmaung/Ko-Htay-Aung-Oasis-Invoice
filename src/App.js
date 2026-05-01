@@ -1,29 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase-config';
-import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import html2canvas from 'html2canvas';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('invoice');
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const invoiceRef = useRef(null);
 
+  // Invoice States
   const [invoiceNo, setInvoiceNo] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "", address: "" });
   const [discount, setDiscount] = useState(0);
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: 0, price: 0 })));
 
-  useEffect(() => { if (activeTab === 'dashboard') fetchHistory(); }, [activeTab]);
-
-  const fetchHistory = async () => {
-    try {
-      const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      setHistory(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    } catch (e) { console.error(e); }
-  };
+  // 🔢 Auto Invoice No & Realtime History
+  useEffect(() => {
+    const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setHistory(data);
+      
+      // Auto Invoice logic
+      if (data.length > 0 && !invoiceNo) {
+        const lastInv = data[0].invoiceNo || "0";
+        const nextNum = parseInt(lastInv.replace(/[^0-9]/g, '')) + 1;
+        setInvoiceNo(nextNum.toString().padStart(3, '0'));
+      } else if (!invoiceNo) {
+        setInvoiceNo("001");
+      }
+    });
+    return () => unsub();
+  }, [invoiceNo]);
 
   const updateRow = (index, field, value) => {
     const newRows = [...rows];
@@ -34,15 +43,19 @@ const App = () => {
 
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
-  const formatNum = (num) => (num === 0 || !num) ? "0" : num.toLocaleString();
+  const formatNum = (num) => (num === 0 || !num) ? "" : num.toLocaleString();
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
-      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "invoices"), {
+        invoiceNo, customer, rows, totalAmount, discount, balance,
+        createdAt: serverTimestamp()
+      });
+      
       const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
       const link = document.createElement('a');
-      link.download = `Oasis_Invoice_${invoiceNo || 'New'}.jpg`;
+      link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 0.9);
       link.click();
       alert("JPEG သိမ်းဆည်းပြီး Firebase မှာ မှတ်တမ်းတင်ပြီးပါပြီ ကိုကို!");
@@ -54,8 +67,8 @@ const App = () => {
   return (
     <div style={styles.appContainer}>
       <div className="no-print" style={styles.tabBar}>
-        <button onClick={() => {setActiveTab('invoice'); setSelectedInvoice(null);}} style={activeTab === 'invoice' ? styles.activeTab : styles.tab}>New Invoice</button>
-        <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.activeTab : styles.tab}>Invoice History</button>
+        <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.activeTab : styles.tab}>New Invoice</button>
+        <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.activeTab : styles.tab}>History</button>
         <button onClick={() => {localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false);}} style={styles.logoutTab}>Logout</button>
       </div>
 
@@ -77,7 +90,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Info Rows */}
+              {/* Info Rows with Aligned Colons */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -85,33 +98,32 @@ const App = () => {
                   <div style={styles.alignedRow}><span style={styles.label}></span> <span style={styles.colon}></span> <span style={styles.value}>09-974 989 754</span></div>
                 </div>
                 <div style={styles.metaBox}>
-                  <div style={styles.invNoBox}>INV NO: <input style={styles.invInput} onChange={e=>setInvoiceNo(e.target.value)} /></div>
+                  <div style={styles.invNoBox}>INV NO: <input style={styles.invInput} value={invoiceNo} onChange={e=>setInvoiceNo(e.target.value)} /></div>
                   <div style={styles.dateBox}>Date: {new Date().toLocaleDateString()}</div>
                 </div>
               </div>
 
-              {/* Table */}
+              {/* Table with Vertical Dotted Line between Desc & Unit */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
-                    <th style={styles.thNo}>No.</th>
-                    <th style={styles.thDesc}>Item Description</th>
-                    <th style={styles.thUnit}>Unit</th>
-                    <th style={styles.thQty}>Qty</th>
-                    <th style={styles.thPrice}>Price</th>
-                    <th style={styles.thTotal}>Total Price</th>
+                    <th style={styles.thColNo}>No.</th>
+                    <th style={styles.thColDesc}>Item Description</th>
+                    <th style={styles.thColUnit}>Unit</th>
+                    <th style={styles.thColQty}>Qty</th>
+                    <th style={styles.thColPrice}>Price</th>
+                    <th style={styles.thColTotal}>Total Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
-                      <td style={styles.tdCol}>{i+1}</td>
-                      {/* Item Description နဲ့ Unit ကြားမှာ dotted border ထည့်လိုက်ပါပြီ */}
-                      <td style={styles.tdDesc}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.tdCol}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.tdCol}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.tdCol}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
-                      <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
+                      <td style={styles.tdColCenter}>{i+1}</td>
+                      <td style={styles.tdColDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdColTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -130,20 +142,19 @@ const App = () => {
                   <div style={styles.summaryRow}><span>Balance</span> <span>{formatNum(balance)}</span></div>
                 </div>
               </div>
-
               <div style={styles.sigArea}><div style={styles.sigBlock}><div style={{fontFamily:'cursive',fontSize:'26px'}}>Zwe</div><div style={styles.sigLine}>Zwe Htet Naing</div><div>OASIS</div></div></div>
               <p style={styles.thanks}>Thanks for your business!</p>
             </div>
           </div>
-          <div style={styles.actionArea}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>Save to Firebase & Download JPEG</button></div>
+          <div style={styles.actionArea}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>Save & Download JPEG</button></div>
         </div>
       ) : (
         <div style={styles.dashboardArea}>
-          <h2>Dashboard - Invoice History</h2>
+          <h2>Invoice History (Realtime)</h2>
           <div style={styles.historyList}>
             {history.map(item => (
               <div key={item.id} style={styles.historyItem}>
-                <span><strong>INV:</strong> {item.invoiceNo || 'N/A'}</span>
+                <span><strong>INV:</strong> {item.invoiceNo}</span>
                 <span><strong>Customer:</strong> {item.customer?.name}</span>
                 <span><strong>Total:</strong> {formatNum(item.balance)} Ks</span>
               </div>
@@ -187,25 +198,19 @@ const styles = {
   invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '6px', textAlign: 'center', fontWeight: 'bold' },
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
-  
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
-  thNo: { width: '40px', border: '1.5px solid #000', padding: '10px' },
-  thDesc: { flex: 1, border: '1.5px solid #000', padding: '10px' }, 
-  thUnit: { width: '90px', border: '1.5px solid #000' }, 
-  thQty: { width: '90px', border: '1.5px solid #000' },
-  thPrice: { width: '110px', border: '1.5px solid #000' },
-  thTotal: { width: '140px', border: '1.5px solid #000' },
-  
-  // ပြင်ဆင်ထားသော နေရာ - tdDesc မှာ borderRight ကို dotted ပြောင်းထားပါတယ်
-  tdDesc: { flex: 1, border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 },
-  // ကျန်တဲ့ column တွေကတော့ solid ပဲဖြစ်ပြီး unit, qty, price တွေကြားက logic က input styling နဲ့ သွားတာဖြစ်လို့ ဒါက အဆင်ပြေပါတယ်
-  tdCol: { border: '1.5px solid #000', borderLeft: 'none', textAlign: 'center', fontSize: '13px', padding: 0 },
-  tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
-  
+  thColNo: { width: '45px', border: '1.5px solid #000', padding: '10px' },
+  thColDesc: { border: '1.5px solid #000', padding: '10px' }, // Item Description is widest
+  thColUnit: { width: '90px', border: '1.5px solid #000' },
+  thColQty: { width: '90px', border: '1.5px solid #000' },
+  thColPrice: { width: '115px', border: '1.5px solid #000' },
+  thColTotal: { width: '145px', border: '1.5px solid #000' },
+  tdColCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
+  tdColDotted: { border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 },
+  tdColTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
-  
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
   customerBox: { flex: 1.5 },
   dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px', marginLeft: '5px' },
@@ -218,14 +223,14 @@ const styles = {
   sigLine: { borderTop: '2px solid black', paddingTop: '5px', fontWeight: 'bold' },
   thanks: { textAlign: 'center', fontSize: '16px', fontWeight: 'bold', marginTop: '30px' },
   actionArea: { display: 'flex', justifyContent: 'center', paddingBottom: '40px' },
-  saveBtn: { width: '230mm', padding: '15px', backgroundColor: '#059669', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  saveBtn: { width: '230mm', padding: '15px', backgroundColor: '#059669', color: 'white', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   loginPage: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0fdf4' },
   loginCard: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' },
   loginInput: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '8px', outline:'none' },
   saveBtnSmall: { width: '100%', padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor:'pointer' },
   dashboardArea: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
   historyList: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' },
-  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer' },
+  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
 };
 
 export default App;

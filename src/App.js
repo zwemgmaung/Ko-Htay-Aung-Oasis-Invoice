@@ -34,7 +34,6 @@ const App = () => {
 
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
-
   const formatNum = (num) => (num === 0 || !num) ? "0" : num.toLocaleString();
 
   const handleSaveAndCapture = async () => {
@@ -91,7 +90,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Corrected Table Layout as per Screenshot */}
+              {/* Table with Vertical Dotted Line exactly where you specified */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -107,7 +106,8 @@ const App = () => {
                   {rows.map((row, i) => (
                     <tr key={i}>
                       <td style={styles.tdCenter}>{i+1}</td>
-                      <td style={styles.td}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      {/* ဤနေရာတွင် Dotted Line ကို ညာဘက်အခြမ်းမှာ ထည့်ထားပါတယ် */}
+                      <td style={styles.tdDescDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                       <td style={styles.td}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                       <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
                       <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
@@ -121,7 +121,7 @@ const App = () => {
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
-                  <div style={styles.alignedRow}><span style={styles.labelLong}>Phone Number</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, phone: e.target.value})} /></div>
+                  <div style={styles.alignedRow}><span style={styles.labelLong}>Contact No.</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, phone: e.target.value})} /></div>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Address</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, address: e.target.value})} /></div>
                 </div>
                 <div style={styles.summaryBox}>
@@ -139,7 +139,7 @@ const App = () => {
         </div>
       ) : (
         <div style={styles.dashboardArea}>
-          <h2 style={{borderBottom: '2px solid #059669', paddingBottom: '10px'}}>Dashboard - Invoice History</h2>
+          <h2>Dashboard - Invoice History</h2>
           <div style={styles.historyList}>
             {history.map(item => (
               <div key={item.id} style={styles.historyItem}>
@@ -187,7 +187,6 @@ const styles = {
   invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '6px', textAlign: 'center', fontWeight: 'bold' },
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
-  // Table Borders as per your screenshot
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '40px', border: '1.5px solid #000', padding: '10px' },
@@ -196,6 +195,8 @@ const styles = {
   thQty: { width: '90px', border: '1.5px solid #000' },
   thPrice: { width: '110px', border: '1.5px solid #000' },
   thTotal: { width: '140px', border: '1.5px solid #000' },
+  // Vertical Dotted Line for Item Description and Unit
+  tdDescDotted: { border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 },
   td: { border: '1.5px solid #000', padding: 0 },
   tdCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
   tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
@@ -224,4 +225,4 @@ const styles = {
 };
 
 export default App;
-        
+                

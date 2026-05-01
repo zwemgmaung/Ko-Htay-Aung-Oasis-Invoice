@@ -10,7 +10,6 @@ const App = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const invoiceRef = useRef(null);
 
-  // Invoice States
   const [invoiceNo, setInvoiceNo] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "", address: "" });
   const [discount, setDiscount] = useState(0);
@@ -28,7 +27,6 @@ const App = () => {
 
   const updateRow = (index, field, value) => {
     const newRows = [...rows];
-    // Numeric fields အတွက် value ကို သန့်စင်မယ်
     const cleanValue = field === "desc" || field === "unit" ? value : Number(value.replace(/,/g, ''));
     newRows[index][field] = cleanValue;
     setRows(newRows);
@@ -37,7 +35,6 @@ const App = () => {
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
 
-  // Number formatting with commas
   const formatNum = (num) => {
     if (num === 0 || !num) return "0";
     return num.toLocaleString();
@@ -97,7 +94,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table */}
+              {/* Table with Vertical Dotted Line from Row 1 to 14 */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -113,8 +110,8 @@ const App = () => {
                   {rows.map((row, i) => (
                     <tr key={i}>
                       <td style={styles.tdNo}>{i+1}</td>
-                      {/* Item Description နဲ့ Unit ကြားမှာ Vertical Dotted Line ထည့်ထားပါတယ် */}
-                      <td style={styles.tdDescWithDottedRight}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      {/* Vertical Dotted Line applied here */}
+                      <td style={styles.tdDescDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                       <td style={styles.tdCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                       <td style={styles.tdCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
                       <td style={styles.tdCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
@@ -149,7 +146,7 @@ const App = () => {
           <h2 style={{borderBottom: '2px solid #059669', paddingBottom: '10px'}}>Dashboard - Invoice History</h2>
           <div style={styles.historyList}>
             {history.map(item => (
-              <div key={item.id} style={styles.historyItem} onClick={() => setSelectedInvoice(item)}>
+              <div key={item.id} style={styles.historyItem}>
                 <span><strong>INV:</strong> {item.invoiceNo || 'N/A'}</span>
                 <span><strong>Customer:</strong> {item.customer?.name}</span>
                 <span><strong>Total:</strong> {formatNum(item.balance)} Ks</span>
@@ -198,13 +195,12 @@ const styles = {
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '40px', border: '1px solid #000', padding: '10px' },
   thDesc: { flex: 1, border: '1px solid #000', padding: '10px' },
-  thUnit: { width: '80px', border: '1px solid #000' }, 
-  thQty: { width: '80px', border: '1px solid #000' },
+  thUnit: { width: '90px', border: '1px solid #000' }, 
+  thQty: { width: '90px', border: '1px solid #000' },
   thPrice: { width: '110px', border: '1px solid #000' },
   thTotal: { width: '140px', border: '1px solid #000' },
-  // Vertical Dotted Line အတွက် အသစ်ထည့်ထားတဲ့ style
-  tdDescWithDottedRight: { border: '1px solid #000', borderRight: '1px dotted #000', padding: 0 },
-  td: { border: '1px solid #000', padding: 0 },
+  // Vertical Dotted Line အတွက် အထူး style
+  tdDescDotted: { border: '1px solid #000', borderRight: '1px dotted #000', padding: 0 },
   tdNo: { border: '1px solid #000', textAlign: 'center', fontSize: '13px' },
   tdCenter: { border: '1px solid #000', textAlign: 'center', fontSize: '13px', padding: 0 },
   tdTotalValue: { border: '1px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },

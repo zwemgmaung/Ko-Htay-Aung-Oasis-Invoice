@@ -9,27 +9,21 @@ const App = () => {
   const [history, setHistory] = useState([]);
   const invoiceRef = useRef(null);
 
-  // Invoice States
   const [invoiceNo, setInvoiceNo] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "", address: "" });
   const [discount, setDiscount] = useState(0);
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: 0, price: 0 })));
 
-  // 🔢 Auto Invoice No & Realtime History
   useEffect(() => {
     const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setHistory(data);
-      
-      // Auto Invoice logic
       if (data.length > 0 && !invoiceNo) {
         const lastInv = data[0].invoiceNo || "0";
         const nextNum = parseInt(lastInv.replace(/[^0-9]/g, '')) + 1;
         setInvoiceNo(nextNum.toString().padStart(3, '0'));
-      } else if (!invoiceNo) {
-        setInvoiceNo("001");
-      }
+      } else if (!invoiceNo) { setInvoiceNo("001"); }
     });
     return () => unsub();
   }, [invoiceNo]);
@@ -48,11 +42,7 @@ const App = () => {
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
-      await addDoc(collection(db, "invoices"), {
-        invoiceNo, customer, rows, totalAmount, discount, balance,
-        createdAt: serverTimestamp()
-      });
-      
+      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
       const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
@@ -66,6 +56,17 @@ const App = () => {
 
   return (
     <div style={styles.appContainer}>
+      {/* CSS For Vertical Dotted Line */}
+      <style>{`
+        .dotted-col { position: relative; border-right: 1.5px solid #000; }
+        .dotted-col::after {
+          content: "";
+          position: absolute;
+          right: 3px; top: 0; bottom: 0;
+          border-right: 1.5px dotted #000;
+        }
+      `}</style>
+
       <div className="no-print" style={styles.tabBar}>
         <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.activeTab : styles.tab}>New Invoice</button>
         <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.activeTab : styles.tab}>History</button>
@@ -90,7 +91,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Info Rows with Aligned Colons */}
+              {/* Address Section */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -103,7 +104,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with Vertical Dotted Line between Desc & Unit */}
+              {/* Table with the requested Vertical Dotted Line */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -119,7 +120,8 @@ const App = () => {
                   {rows.map((row, i) => (
                     <tr key={i}>
                       <td style={styles.tdColCenter}>{i+1}</td>
-                      <td style={styles.tdColDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      {/* Item Description col - dotted line is inside the CSS class */}
+                      <td className="dotted-col" style={styles.tdInputBox}><input style={styles.tdInputText} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                       <td style={styles.tdColCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                       <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
                       <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
@@ -129,7 +131,7 @@ const App = () => {
                 </tbody>
               </table>
 
-              {/* Footer */}
+              {/* Footer Sections */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
@@ -201,16 +203,16 @@ const styles = {
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thColNo: { width: '45px', border: '1.5px solid #000', padding: '10px' },
-  thColDesc: { border: '1.5px solid #000', padding: '10px' }, // Item Description is widest
+  thColDesc: { border: '1.5px solid #000', padding: '10px' },
   thColUnit: { width: '90px', border: '1.5px solid #000' },
   thColQty: { width: '90px', border: '1.5px solid #000' },
   thColPrice: { width: '115px', border: '1.5px solid #000' },
   thColTotal: { width: '145px', border: '1.5px solid #000' },
   tdColCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
-  tdColDotted: { border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 },
-  tdColTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
-  tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
+  tdInputBox: { border: '1.5px solid #000', padding: 0 },
+  tdInputText: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
+  tdColTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
   customerBox: { flex: 1.5 },
   dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px', marginLeft: '5px' },

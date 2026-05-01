@@ -80,7 +80,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Info Row Address */}
+              {/* Info Rows */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -93,7 +93,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table - Fully Solid Grid Like Excel */}
+              {/* Table - Correct Excel Grid Alignment */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -108,18 +108,18 @@ const App = () => {
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
-                      <td style={styles.tdBorderCenter}>{i+1}</td>
-                      <td style={styles.tdBorder}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.tdBorder}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.tdBorder}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.tdBorder}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdCenter}>{i+1}</td>
+                      <td style={styles.tdCell}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.tdCell}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.tdCell}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.tdCell}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
                       <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* Footer Layout */}
+              {/* Footer */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
@@ -161,7 +161,7 @@ const LoginSection = ({ onLogin }) => (
 );
 
 const styles = {
-  appContainer: { backgroundColor: '#cbd5e1', minHeight: '100vh' },
+  appContainer: { backgroundColor: '#cbd5e1', minHeight: '100vh', overflowX: 'hidden' },
   tabBar: { display: 'flex', backgroundColor: '#1e293b', padding: '10px', gap: '5px' },
   tab: { padding: '8px 15px', color: 'white', border: 'none', background: 'transparent', cursor:'pointer' },
   activeTab: { padding: '8px 15px', color: 'white', borderBottom: '3px solid #059669', background: '#334155', fontWeight: 'bold' },
@@ -189,18 +189,18 @@ const styles = {
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
 
-  // Table - Full Solid Lines Grid
+  // Updated Table - Full Solid Borders Like Excel
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '45px', border: '1.5px solid #000', padding: '10px' },
-  thDesc: { border: '1.5px solid #000', padding: '10px' },
-  thUnit: { width: '80px', border: '1.5px solid #000' },
-  thQty: { width: '80px', border: '1.5px solid #000' },
-  thPrice: { width: '110px', border: '1.5px solid #000' },
-  thTotal: { width: '140px', border: '1.5px solid #000' },
+  thDesc: { border: '1.5px solid #000', padding: '10px' }, // Flexible widest column
+  thUnit: { width: '90px', border: '1.5px solid #000' },
+  thQty: { width: '90px', border: '1.5px solid #000' },
+  thPrice: { width: '115px', border: '1.5px solid #000' },
+  thTotal: { width: '145px', border: '1.5px solid #000' },
 
-  tdBorder: { border: '1.5px solid #000', padding: 0 },
-  tdBorderCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
+  tdCell: { border: '1.5px solid #000', padding: 0 },
+  tdCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
   tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
@@ -224,7 +224,8 @@ const styles = {
   saveBtnSmall: { width: '100%', padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor:'pointer' },
   dashboardArea: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
   historyList: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
+  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer' },
 };
 
 export default App;
+                

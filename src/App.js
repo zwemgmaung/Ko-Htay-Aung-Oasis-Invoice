@@ -10,6 +10,7 @@ const App = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const invoiceRef = useRef(null);
 
+  // Invoice States
   const [invoiceNo, setInvoiceNo] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "", address: "" });
   const [discount, setDiscount] = useState(0);
@@ -27,15 +28,20 @@ const App = () => {
 
   const updateRow = (index, field, value) => {
     const newRows = [...rows];
-    newRows[index][field] = (field === "desc" || field === "unit") ? value : Number(value);
+    // Numeric fields အတွက် value ကို သန့်စင်မယ်
+    const cleanValue = field === "desc" || field === "unit" ? value : Number(value.replace(/,/g, ''));
+    newRows[index][field] = cleanValue;
     setRows(newRows);
   };
 
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
 
-  // Number တွေကို ကော်မာ ခံပေးတဲ့ function
-  const formatNum = (num) => num ? num.toLocaleString() : "";
+  // Number formatting with commas
+  const formatNum = (num) => {
+    if (num === 0 || !num) return "0";
+    return num.toLocaleString();
+  };
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
@@ -67,7 +73,7 @@ const App = () => {
               {/* Header */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
-                  <div style={styles.logoPlaceholder}>Logo</div>
+                  <div style={styles.logoCircle}>Logo</div>
                   <div style={styles.bizHeader}>
                     <h1 style={styles.bizTitle}>Ko Htay Aung</h1>
                     <h2 style={styles.bizSub}>( Oasis )</h2>
@@ -78,7 +84,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Address & Contact Details */}
+              {/* Info Rows */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -91,7 +97,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Items Table */}
+              {/* Table */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -107,26 +113,26 @@ const App = () => {
                   {rows.map((row, i) => (
                     <tr key={i}>
                       <td style={styles.tdNo}>{i+1}</td>
-                      <td style={styles.td}><input style={styles.tdInput} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} type="number" onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} type="number" onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
                       <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* Bottom Customer & Total Section */}
+              {/* Footer */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
-                  <div style={styles.alignedRow}><span style={styles.labelLong}>Contact No.</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, phone: e.target.value})} /></div>
+                  <div style={styles.alignedRow}><span style={styles.labelLong}>Phone Number</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, phone: e.target.value})} /></div>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Address</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, address: e.target.value})} /></div>
                 </div>
                 <div style={styles.summaryBox}>
                   <div style={styles.totalRow}><span>Total Amount</span> <span>{formatNum(totalAmount)}</span></div>
-                  <div style={styles.summaryRow}><span>Discount</span> <input style={styles.summaryInput} type="number" onChange={e=>setDiscount(Number(e.target.value))} /></div>
+                  <div style={styles.summaryRow}><span>Discount</span> <input style={styles.summaryInput} type="text" value={formatNum(discount)} onChange={e=>setDiscount(Number(e.target.value.replace(/,/g, '')))} /></div>
                   <div style={styles.summaryRow}><span>Balance</span> <span>{formatNum(balance)}</span></div>
                 </div>
               </div>
@@ -139,16 +145,26 @@ const App = () => {
         </div>
       ) : (
         <div style={styles.dashboardArea}>
-          <h2>Dashboard - Invoice History</h2>
+          <h2 style={{borderBottom: '2px solid #059669', paddingBottom: '10px'}}>Dashboard - Invoice History</h2>
           <div style={styles.historyList}>
             {history.map(item => (
-              <div key={item.id} style={styles.historyItem}>
+              <div key={item.id} style={styles.historyItem} onClick={() => setSelectedInvoice(item)}>
                 <span><strong>INV:</strong> {item.invoiceNo || 'N/A'}</span>
                 <span><strong>Customer:</strong> {item.customer?.name}</span>
                 <span><strong>Total:</strong> {formatNum(item.balance)} Ks</span>
               </div>
             ))}
           </div>
+          {selectedInvoice && (
+            <div style={styles.overlay}>
+              <div style={{transform: 'scale(0.8)', background: 'white', padding: '20px', borderRadius: '10px'}}>
+                <button onClick={() => setSelectedInvoice(null)} style={{float:'right', padding:'10px', background:'red', color:'white', border:'none', borderRadius:'5px'}}>Close</button>
+                <h3>Invoice Details: {selectedInvoice.invoiceNo}</h3>
+                <p>Name: {selectedInvoice.customer.name}</p>
+                <p>Amount: {formatNum(selectedInvoice.balance)} Ks</p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -170,7 +186,7 @@ const styles = {
   a4Sheet: { width: '230mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 0 15px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' },
   header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #059669', paddingBottom: '10px', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '20px', alignItems: 'center' },
-  logoPlaceholder: { width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
+  logoCircle: { width: '80px', height: '80px', border: '2px solid #059669', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
   bizHeader: { textAlign: 'center' },
   bizTitle: { fontSize: '28px', margin: 0 },
   bizSub: { fontSize: '22px', margin: '0 0 5px 0' },
@@ -191,8 +207,8 @@ const styles = {
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '40px', border: '1px solid #000', padding: '10px' },
   thDesc: { flex: 1, border: '1px solid #000', padding: '10px' },
-  thUnit: { width: '80px', border: '1px solid #000' }, 
-  thQty: { width: '80px', border: '1px solid #000' },
+  thUnit: { width: '90px', border: '1px solid #000' }, 
+  thQty: { width: '90px', border: '1px solid #000' },
   thPrice: { width: '110px', border: '1px solid #000' },
   thTotal: { width: '140px', border: '1px solid #000' },
   td: { border: '1px solid #000', padding: 0 },
@@ -219,7 +235,8 @@ const styles = {
   saveBtnSmall: { width: '100%', padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor:'pointer' },
   dashboardArea: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
   historyList: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' },
-  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }
+  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer' },
+  overlay: { position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.7)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000 }
 };
 
 export default App;

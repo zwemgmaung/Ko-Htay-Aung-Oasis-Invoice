@@ -17,7 +17,6 @@ const App = () => {
   const [discount, setDiscount] = useState(0);
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: "", price: "" })));
 
-  // Realtime Sync & Auto Reset Logic
   useEffect(() => {
     const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -74,7 +73,7 @@ const App = () => {
         .rotate-logo { transition: transform 0.5s ease; transform: rotate(-20deg); filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2)); cursor: zoom-in; }
         .rotate-logo:hover { transform: rotate(0deg); }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; }
       `}</style>
 
       {/* Navbar Fixed */}
@@ -88,10 +87,10 @@ const App = () => {
 
       <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
-          /* NEW INVOICE VIEW - အရင်အတိုင်း */
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
               <div ref={invoiceRef} style={styles.a4Sheet}>
+                {/* Header */}
                 <div style={styles.header}>
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" className="rotate-logo" style={styles.logoImage} onClick={() => setShowFullLogo(true)} />
@@ -109,6 +108,7 @@ const App = () => {
                   </div>
                 </div>
 
+                {/* Excel Table */}
                 <table className="excel-table">
                   <thead>
                     <tr><th style={{width: '45px'}}>No.</th><th>Item Description</th><th style={{width: '80px'}}>Unit</th><th style={{width: '65px'}}>Qty</th><th style={{width: '110px'}}>Price</th><th style={{width: '135px'}}>Total Price</th></tr>
@@ -127,11 +127,21 @@ const App = () => {
                   </tbody>
                 </table>
 
+                {/* Footer Section - ကိုကိုပြောတဲ့အတိုင်း ပြင်ထားပါတယ် */}
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
-                    <div style={styles.fRow}>Name : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
-                    <div style={styles.fRow}>Phone : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} /></div>
-                    <div style={styles.fRow}>Addr : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
+                    <div style={styles.fRow}>
+                      <span style={styles.fLabel}>Customer Name</span> <span style={styles.colon}>:</span> 
+                      <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} />
+                    </div>
+                    <div style={styles.fRow}>
+                      <span style={styles.fLabel}>Contact No.</span> <span style={styles.colon}>:</span> 
+                      <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} />
+                    </div>
+                    <div style={styles.fRow}>
+                      <span style={styles.fLabel}>Address</span> <span style={styles.colon}>:</span> 
+                      <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} />
+                    </div>
                   </div>
                   <div style={styles.summaryArea}>
                     <div style={styles.sRow}>Total: <span>{totalAmount.toLocaleString()}</span></div>
@@ -148,7 +158,6 @@ const App = () => {
             <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>SAVE & DOWNLOAD JPEG</button></div>
           </div>
         ) : (
-          /* HISTORY DASHBOARD */
           <div style={styles.dashboardArea}>
             <h2 style={{color:'#065f46'}}>History Records</h2>
             <div style={styles.historyGrid}>
@@ -164,13 +173,10 @@ const App = () => {
         )}
       </div>
 
-      {/* History Modal Viewer - အပြည့်အစုံပေါ်ရန် ဤနေရာတွင် Fix လုပ်ထားသည် */}
       {selectedInvoice && (
         <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
           <button className="close-modal-btn" onClick={() => setSelectedInvoice(null)}>CLOSE X</button>
-          <div onClick={e => e.stopPropagation()}>
-            <InvoiceReadOnly data={selectedInvoice} />
-          </div>
+          <div onClick={e => e.stopPropagation()}><InvoiceReadOnly data={selectedInvoice} /></div>
         </div>
       )}
 
@@ -179,7 +185,7 @@ const App = () => {
   );
 };
 
-// 🔐 History ထဲက Invoice ကို ပုံစံမပျက် ပြန်ကြည့်ရန် Component
+// ... Styles, LoginSection and InvoiceReadOnly (အပြည့်အစုံ ပါဝင်ပြီးသားပါ) ...
 const InvoiceReadOnly = ({ data }) => (
   <div style={styles.a4Sheet}>
     <div style={styles.header}>
@@ -198,7 +204,6 @@ const InvoiceReadOnly = ({ data }) => (
         <div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div>
       </div>
     </div>
-
     <table className="excel-table">
       <thead>
         <tr><th style={{width: '45px'}}>No.</th><th>Item Description</th><th style={{width: '80px'}}>Unit</th><th style={{width: '65px'}}>Qty</th><th style={{width: '110px'}}>Price</th><th style={{width: '135px'}}>Total Price</th></tr>
@@ -216,11 +221,10 @@ const InvoiceReadOnly = ({ data }) => (
         ))}
       </tbody>
     </table>
-
     <div style={styles.footerFlex}>
       <div style={styles.customerArea}>
-        <p style={{fontSize:'14px'}}><strong>Customer :</strong> {data.customer.name}</p>
-        <p style={{fontSize:'14px'}}><strong>Phone :</strong> {data.customer.phone}</p>
+        <p style={{fontSize:'14px'}}><strong>Customer Name :</strong> {data.customer.name}</p>
+        <p style={{fontSize:'14px'}}><strong>Contact No. :</strong> {data.customer.phone}</p>
         <p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p>
       </div>
       <div style={styles.summaryArea}>
@@ -229,14 +233,11 @@ const InvoiceReadOnly = ({ data }) => (
         <div style={{...styles.sRow, background:'#10b981', color:'white'}}>Balance: <span>{data.balance.toLocaleString()}</span></div>
       </div>
     </div>
-    <div style={styles.signatureArea}><div style={styles.sigBox}>
-      <div style={styles.sigName}>Zwe</div><div style={styles.sigLine}>Zwe Htet Naing</div><div style={{fontSize:'11px'}}>OASIS</div>
-    </div></div>
+    <div style={styles.signatureArea}><div style={styles.sigBox}><div style={styles.sigName}>Zwe</div><div style={styles.sigLine}>Zwe Htet Naing</div><div style={{fontSize:'11px'}}>OASIS</div></div></div>
     <p style={styles.thanksText}>Report View Only</p>
   </div>
 );
 
-// Login Section remains the same with Eye Icon
 const LoginSection = ({ onLogin }) => {
   const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState("");
@@ -270,8 +271,10 @@ const styles = {
   dateBox: { fontSize:'12px', color:'#666' },
   footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '30px' },
   customerArea: { flex: 1.5 },
-  fRow: { marginBottom: '10px', fontSize:'14px', fontWeight:'bold' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #10b981', outline:'none', width:'70%', marginLeft:'10px' },
+  fRow: { display: 'flex', alignItems: 'center', marginBottom: '10px' },
+  fLabel: { width: '120px', fontSize: '14px', fontWeight: 'bold', color: '#333' },
+  colon: { width: '20px', textAlign: 'center', fontWeight: 'bold' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #10b981', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '280px', border: '2px solid black' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #ddd' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold' },
@@ -288,8 +291,8 @@ const styles = {
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#ecfdf5' },
   loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', boxShadow:'0 10px 20px rgba(0,0,0,0.1)', width: '380px' },
   loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', border:'1.5px solid #d1fae5', borderRadius:'8px', outline: 'none' },
-  logoFullModal: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255,255,255,0.95)', zIndex: 4000, display: 'flex', justifyContent: 'center', align_items: 'center' }
+  logoFullModal: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255,255,255,0.95)', zIndex: 4000, display: 'flex', justifyContent: 'center', alignItems: 'center' }
 };
 
 export default App;
-                                       
+  

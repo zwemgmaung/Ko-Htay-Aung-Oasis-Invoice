@@ -17,14 +17,11 @@ const App = () => {
   const [discount, setDiscount] = useState(0);
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: "", price: "" })));
 
-  // 🔢 Realtime History & Invoice No Reset Logic
   useEffect(() => {
     const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setHistory(data);
-      
-      // ကိုကိုပြောတဲ့အတိုင်း data မရှိရင် 001 ကပြန်စမယ်
       if (data.length === 0) {
         setInvoiceNo("001");
       } else {
@@ -65,7 +62,8 @@ const App = () => {
   };
 
   if (!isLoggedIn) return <LoginSection onLogin={() => setIsLoggedIn(true)} />;
-    return (
+
+  return (
     <div style={styles.appContainer}>
       <style>{`
         .excel-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid black; }
@@ -74,11 +72,11 @@ const App = () => {
         .excel-input { width: 100%; height: 100%; border: none; padding: 0 10px; outline: none; font-size: 13px; background: transparent; }
         .excel-input-center { width: 100%; height: 100%; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; }
         .rotate-logo { transition: transform 0.5s ease; transform: rotate(-20deg); filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2)); cursor: zoom-in; }
+        .rotate-logo:hover { transform: rotate(0deg); }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .logo-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); z-index: 3000; display: flex; justify-content: center; align-items: center; }
       `}</style>
 
-      {/* Navbar Fixed */}
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
@@ -92,7 +90,6 @@ const App = () => {
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
               <div ref={invoiceRef} style={styles.a4Sheet}>
-                {/* Header */}
                 <div style={styles.header}>
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" className="rotate-logo" style={styles.logoImage} onClick={() => setShowFullLogo(true)} />
@@ -110,7 +107,6 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* Table - Excel Style */}
                 <table className="excel-table">
                   <thead>
                     <tr><th style={{width: '45px'}}>No.</th><th>Item Description</th><th style={{width: '80px'}}>Unit</th><th style={{width: '65px'}}>Qty</th><th style={{width: '110px'}}>Price</th><th style={{width: '135px'}}>Total Price</th></tr>
@@ -129,7 +125,6 @@ const App = () => {
                   </tbody>
                 </table>
 
-                {/* Footer and Sig */}
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
                     <div style={styles.fRow}>Name : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -163,13 +158,10 @@ const App = () => {
         )}
       </div>
 
-      {/* History Modal Viewer - ဒီမှာ ပုံပေါ်အောင် Fix လုပ်ထားပါတယ်ရှင် */}
       {selectedInvoice && (
         <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
           <button style={styles.closeModal} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
-          <div onClick={e => e.stopPropagation()}>
-            <InvoiceReadOnly data={selectedInvoice} />
-          </div>
+          <div onClick={e => e.stopPropagation()}><InvoiceReadOnly data={selectedInvoice} /></div>
         </div>
       )}
 
@@ -178,5 +170,86 @@ const App = () => {
   );
 };
 
-// ... Styles, LoginSection and InvoiceReadOnly (Same as high-fidelity version) ...
-                                       
+const LoginSection = ({ onLogin }) => {
+  const [showPass, setShowPass] = useState(false);
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+
+  return (
+    <div style={styles.loginBg}>
+      <div style={styles.loginCard}>
+        <img src={OasisLogo} alt="Logo" style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit:'cover', margin: '0 auto 15px', border:'2px solid #10b981' }} />
+        <h2 style={{color: '#064e3b', margin: '0 0 5px 0'}}>Ko Htay Aung ( Oasis )</h2>
+        <p style={{fontSize: '11px', color: '#059669', marginBottom: '25px', fontWeight: 'bold'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Service</p>
+        <input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} />
+        <div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}>
+          <input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '45px'}} onChange={(e) => setPass(e.target.value)} />
+          <span style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '18px' }} onClick={() => setShowPass(!showPass)}>
+            {showPass ? "👁️" : "🙈"}
+          </span>
+        </div>
+        <button onClick={() => { if(user.trim() === "Oasis" && pass === "Oasis@2000") { localStorage.setItem("isLoggedIn", "true"); onLogin(); } }} style={styles.saveBtn}>Login</button>
+      </div>
+    </div>
+  );
+};
+
+const InvoiceReadOnly = ({ data }) => (
+  <div style={styles.a4Sheet}>
+    <h2 style={{color:'#10b981'}}>INV: {data.invoiceNo}</h2>
+    <p>Customer: {data.customer.name}</p>
+    <table className="excel-table">
+        <thead><tr><th>Description</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>{data.rows.map((r, i) => r.desc && <tr key={i}><td><div style={{padding:'10px'}}>{r.desc}</div></td><td style={{textAlign:'center'}}>{r.qty}</td><td style={{textAlign:'right', paddingRight:'10px'}}>{(parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,''))).toLocaleString()}</td></tr>)}</tbody>
+    </table>
+    <h3 style={{textAlign:'right'}}>Total: {data.balance.toLocaleString()} Ks</h3>
+  </div>
+);
+
+const styles = {
+  appContainer: { backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: 'sans-serif' },
+  navBar: { display: 'flex', justifyContent: 'center', background: '#065f46', padding: '10px 15px', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, alignItems: 'center' },
+  navLinks: { display: 'flex', gap: '20px' },
+  navBtn: { background: 'none', border: 'none', color: '#a7f3d0', cursor: 'pointer', fontWeight:'bold', fontSize:'13px' },
+  navBtnActive: { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight:'bold', borderBottom:'3px solid #10b981', fontSize:'13px' },
+  logoutBtn: { position:'absolute', right:'10px', background:'#dc2626', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontWeight:'bold', fontSize:'11px' },
+  scrollWrapper: { padding: '10px 0' },
+  invoiceOuter: { width: 'fit-content', margin: '0 auto' },
+  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' },
+  header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #10b981', paddingBottom: '15px', marginBottom: '25px' },
+  headerLeft: { display: 'flex', gap: '15px', alignItems: 'center' },
+  headerRight: { textAlign: 'right' },
+  logoImage: { width: '75px', height: '70px', borderRadius: '50%', border: '2px solid #10b981', objectFit: 'cover' },
+  bizInfo: { textAlign: 'left' },
+  bizTitle: { fontSize: '24px', margin: 0, color: '#064e3b' },
+  bizSub: { color: '#10b981' },
+  serviceText: { fontSize: '11px', margin: '3px 0', color: '#666', maxWidth:'350px' },
+  headerSmallText: { fontSize: '10px', margin: '2px 0', color: '#444', fontWeight:'bold' },
+  invoiceBadge: { background: '#10b981', color: 'white', padding: '10px 40px', fontWeight: 'bold', fontSize:'20px', marginBottom:'5px' },
+  invNoBox: { fontWeight:'bold', fontSize:'14px', color:'#064e3b' },
+  dateBox: { fontSize:'12px', color:'#666' },
+  footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '30px' },
+  customerArea: { flex: 1.5 },
+  fRow: { marginBottom: '10px', fontSize:'14px', fontWeight:'bold' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #10b981', outline:'none', width:'70%', marginLeft:'10px' },
+  summaryArea: { width: '280px', border: '2px solid black' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #ddd' },
+  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold' },
+  signatureArea: { marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
+  sigBox: { textAlign: 'center', width: '180px' },
+  sigName: { fontFamily: 'cursive', fontSize: '22px', color:'#064e3b' },
+  sigLine: { borderTop: '2.5px solid black', marginTop: '5px', fontWeight:'bold' },
+  thanksText: { textAlign: 'center', fontSize: '16px', fontWeight: 'bold', color: '#10b981', marginTop: '30px' },
+  btnCenter: { textAlign:'center', marginTop:'30px', paddingBottom:'50px' },
+  saveBtn: { padding: '15px 50px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', fontSize:'16px' },
+  dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
+  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' },
+  hCard: { background: 'white', padding: '20px', borderRadius: '10px', cursor: 'pointer', borderLeft: '8px solid #10b981', boxShadow:'0 4px 6px rgba(0,0,0,0.05)' },
+  closeModal: { background: 'red', color: 'white', border: 'none', padding: '10px 20px', borderRadius:'5px', cursor: 'pointer', fontWeight:'bold', marginBottom:'15px' },
+  loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#ecfdf5' },
+  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', boxShadow:'0 10px 20px rgba(0,0,0,0.1)', width: '380px' },
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', border:'1.5px solid #d1fae5', borderRadius:'8px', outline: 'none' }
+};
+
+export default App;
+          

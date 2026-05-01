@@ -67,8 +67,10 @@ const App = () => {
         .excel-table td { border: 1.2px solid black; padding: 0; height: 38px; vertical-align: middle; }
         .excel-input { width: 100%; height: 100%; border: none; padding: 0 10px; outline: none; font-size: 13px; background: transparent; }
         .excel-input-center { width: 100%; height: 100%; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; }
-        .rotate-logo { transform: rotate(-20deg); filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2)); }
+        .rotate-logo { transition: transform 0.5s ease; transform: rotate(-20deg); filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2)); }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .pass-container { position: relative; width: 100%; margin-bottom: 20px; }
+        .eye-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #10b981; font-size: 18px; }
       `}</style>
 
       {/* Navbar */}
@@ -84,7 +86,7 @@ const App = () => {
         <div style={styles.scrollWrapper}>
           <div style={styles.invoiceOuter}>
             <div ref={invoiceRef} style={styles.a4Sheet}>
-              {/* Header - လိပ်စာနှင့် ဖုန်းနံပါတ် ပြန်ထည့်ထားပါတယ် */}
+              {/* Header */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
                   <img src={OasisLogo} alt="Logo" className="rotate-logo" style={styles.logoImage} />
@@ -102,16 +104,11 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Excel Grid Table */}
+              {/* Excel Table */}
               <table className="excel-table">
                 <thead>
                   <tr>
-                    <th style={{width: '45px'}}>No.</th>
-                    <th>Item Description</th>
-                    <th style={{width: '80px'}}>Unit</th>
-                    <th style={{width: '65px'}}>Qty</th>
-                    <th style={{width: '110px'}}>Price</th>
-                    <th style={{width: '135px'}}>Total Price</th>
+                    <th style={{width: '45px'}}>No.</th><th>Item Description</th><th style={{width: '80px'}}>Unit</th><th style={{width: '65px'}}>Qty</th><th style={{width: '110px'}}>Price</th><th style={{width: '135px'}}>Total Price</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -122,15 +119,13 @@ const App = () => {
                       <td><input className="excel-input-center" value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                       <td><input className="excel-input-center" value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
                       <td><input className="excel-input-center" value={row.price} onChange={e=>updateRow(i, 'price', e.target.value)} /></td>
-                      <td style={{textAlign:'right', paddingRight:'10px', fontWeight:'bold', fontSize:'13px'}}>
-                        {calculateTotal(row.qty, row.price).toLocaleString()}
-                      </td>
+                      <td style={{textAlign:'right', paddingRight:'10px', fontWeight:'bold', fontSize:'13px'}}>{calculateTotal(row.qty, row.price).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* Bottom Section */}
+              {/* Footer */}
               <div style={styles.footerFlex}>
                 <div style={styles.customerArea}>
                   <div style={styles.fRow}>Name : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -144,7 +139,6 @@ const App = () => {
                 </div>
               </div>
 
-              {/* လက်မှတ်ကို ညာဘက်အောက်ထောင့်မှာ ထားထားပါတယ် ကိုကို */}
               <div style={styles.signatureArea}>
                 <div style={styles.sigBox}>
                   <div style={styles.sigName}>Zwe</div>
@@ -155,13 +149,12 @@ const App = () => {
               <p style={styles.thanksText}>Thanks for your business!</p>
             </div>
           </div>
-          <div style={{textAlign:'center', marginTop:'30px', paddingBottom:'50px'}}>
-             <button onClick={handleSaveAndCapture} style={styles.saveBtn}>SAVE & DOWNLOAD JPEG</button>
-          </div>
+          <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>SAVE & DOWNLOAD JPEG</button></div>
         </div>
       ) : (
+        /* History Dashboard */
         <div style={styles.dashboardArea}>
-          <h2 style={{color:'#065f46'}}>History Records</h2>
+          <h2>History Records</h2>
           <div style={styles.historyGrid}>
             {history.map(item => (
               <div key={item.id} style={styles.hCard} onClick={() => setSelectedInvoice(item)}>
@@ -183,9 +176,53 @@ const App = () => {
   );
 };
 
+// 🔐 Login Component with Eye Icon
+const LoginSection = ({ onLogin }) => {
+  const [showPass, setShowPass] = useState(false);
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+
+  return (
+    <div style={styles.loginBg}>
+      <div style={styles.loginCard}>
+        <img src={OasisLogo} alt="Logo" style={styles.logoCircleLarge} />
+        <h2 style={{color: '#064e3b', margin: '0 0 5px 0'}}>Ko Htay Aung ( Oasis )</h2>
+        <p style={{fontSize: '11px', color: '#059669', marginBottom: '25px', fontWeight: 'bold'}}>
+          Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Service
+        </p>
+        
+        <input 
+          placeholder="Username" 
+          style={styles.loginInput} 
+          onChange={(e) => setUser(e.target.value)}
+        />
+        
+        <div className="pass-container">
+          <input 
+            type={showPass ? "text" : "password"} 
+            placeholder="Password" 
+            style={{...styles.loginInput, marginBottom: 0}} 
+            onChange={(e) => setPass(e.target.value)}
+          />
+          <span className="eye-icon" onClick={() => setShowPass(!showPass)}>
+            {showPass ? "👁️" : "🙈"}
+          </span>
+        </div>
+
+        <button 
+          onClick={() => { if(user.trim() === "Oasis" && pass === "Oasis@2000") { localStorage.setItem("isLoggedIn", "true"); onLogin(); } }} 
+          style={styles.saveBtn}
+        >
+          Login
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const InvoiceReadOnly = ({ data }) => (
   <div style={styles.a4Sheet}>
-    <h2 style={{color:'#10b981'}}>INV: {data.invoiceNo}</h2>
+    <h2 style={{color:'#10b981'}}>Record: {data.invoiceNo}</h2>
     <p>Customer: {data.customer.name}</p>
     <table className="excel-table">
         <thead><tr><th>Description</th><th>Qty</th><th>Total</th></tr></thead>
@@ -193,10 +230,6 @@ const InvoiceReadOnly = ({ data }) => (
     </table>
     <h3 style={{textAlign:'right'}}>Total: {data.balance.toLocaleString()} Ks</h3>
   </div>
-);
-
-const LoginSection = ({ onLogin }) => (
-  <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.logoCircleLarge} /><h3>SYSTEM LOGIN</h3><input id="u" placeholder="User" style={styles.loginInput}/><input id="p" type="password" placeholder="Pass" style={styles.loginInput}/><button onClick={() => onLogin()} style={styles.saveBtn}>Login</button></div></div>
 );
 
 const styles = {
@@ -211,7 +244,6 @@ const styles = {
   a4Sheet: { width: '210mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' },
   header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #10b981', paddingBottom: '15px', marginBottom: '25px' },
   headerLeft: { display: 'flex', gap: '15px', alignItems: 'center' },
-  headerRight: { textAlign: 'right' },
   logoImage: { width: '75px', height: '70px', borderRadius: '50%', border: '2px solid #10b981' },
   bizInfo: { textAlign: 'left' },
   bizTitle: { fontSize: '24px', margin: 0, color: '#064e3b' },
@@ -233,15 +265,16 @@ const styles = {
   sigName: { fontFamily: 'cursive', fontSize: '22px', color:'#064e3b' },
   sigLine: { borderTop: '2.5px solid black', marginTop: '5px', fontWeight:'bold' },
   thanksText: { textAlign: 'center', fontSize: '16px', fontWeight: 'bold', color: '#10b981', marginTop: '30px' },
+  btnCenter: { textAlign:'center', marginTop:'30px', paddingBottom:'50px' },
   saveBtn: { padding: '15px 50px', background: '#10b981', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', fontSize:'16px' },
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', cursor: 'pointer', borderLeft: '8px solid #10b981', boxShadow:'0 4px 6px rgba(0,0,0,0.05)' },
   closeModal: { background: 'red', color: 'white', border: 'none', padding: '10px 20px', borderRadius:'5px', cursor: 'pointer', fontWeight:'bold', marginBottom:'15px' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#ecfdf5' },
-  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', boxShadow:'0 10px 20px rgba(0,0,0,0.1)' },
-  logoCircleLarge: { width: '80px', height: '80px', borderRadius: '50%', objectFit:'cover', margin: '0 auto 20px', border:'2px solid #10b981' },
-  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'250px', border:'1px solid #ddd', borderRadius:'5px' }
+  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', boxShadow:'0 10px 20px rgba(0,0,0,0.1)', width: '380px' },
+  logoCircleLarge: { width: '100px', height: '100px', borderRadius: '50%', objectFit:'cover', margin: '0 auto 15px', border:'2px solid #10b981' },
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', border:'1.5px solid #d1fae5', borderRadius:'8px', outline: 'none' }
 };
 
 export default App;

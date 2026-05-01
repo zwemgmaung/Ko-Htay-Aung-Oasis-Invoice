@@ -90,7 +90,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with Vertical Dotted Line logic */}
+              {/* Table */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -106,7 +106,7 @@ const App = () => {
                   {rows.map((row, i) => (
                     <tr key={i}>
                       <td style={styles.tdCol}>{i+1}</td>
-                      {/* Item Description column အကျယ်ဆုံးဖြစ်အောင်လုပ်ပြီး ညာဘက်မှာ Dotted Line ထည့်ထားပါတယ် */}
+                      {/* Item Description နဲ့ Unit ကြားမှာ dotted border ထည့်လိုက်ပါပြီ */}
                       <td style={styles.tdDesc}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                       <td style={styles.tdCol}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                       <td style={styles.tdCol}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
@@ -188,19 +188,19 @@ const styles = {
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
   
-  // Table Borders - တစ်ကွက်ချင်းစီ သီးသန့်ဖြစ်အောင် solid borders များ
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '40px', border: '1.5px solid #000', padding: '10px' },
-  thDesc: { flex: 1, border: '1.5px solid #000', padding: '10px' }, // Header solid border
+  thDesc: { flex: 1, border: '1.5px solid #000', padding: '10px' }, 
   thUnit: { width: '90px', border: '1.5px solid #000' }, 
   thQty: { width: '90px', border: '1.5px solid #000' },
   thPrice: { width: '110px', border: '1.5px solid #000' },
   thTotal: { width: '140px', border: '1.5px solid #000' },
   
-  // Item Description cell with Dotted Line to Unit
+  // ပြင်ဆင်ထားသော နေရာ - tdDesc မှာ borderRight ကို dotted ပြောင်းထားပါတယ်
   tdDesc: { flex: 1, border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 },
-  tdCol: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px', padding: 0 },
+  // ကျန်တဲ့ column တွေကတော့ solid ပဲဖြစ်ပြီး unit, qty, price တွေကြားက logic က input styling နဲ့ သွားတာဖြစ်လို့ ဒါက အဆင်ပြေပါတယ်
+  tdCol: { border: '1.5px solid #000', borderLeft: 'none', textAlign: 'center', fontSize: '13px', padding: 0 },
   tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
   
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
@@ -229,4 +229,4 @@ const styles = {
 };
 
 export default App;
-                                       
+                

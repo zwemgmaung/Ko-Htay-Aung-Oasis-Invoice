@@ -34,6 +34,9 @@ const App = () => {
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
 
+  // Number တွေကို ကော်မာ ခံပေးတဲ့ function
+  const formatNum = (num) => num ? num.toLocaleString() : "";
+
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
@@ -64,7 +67,7 @@ const App = () => {
               {/* Header */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
-                  <div style={styles.logoCircle}>Logo</div>
+                  <div style={styles.logoPlaceholder}>Logo</div>
                   <div style={styles.bizHeader}>
                     <h1 style={styles.bizTitle}>Ko Htay Aung</h1>
                     <h2 style={styles.bizSub}>( Oasis )</h2>
@@ -75,7 +78,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Address Section with Aligned Colons */}
+              {/* Address & Contact Details */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -88,7 +91,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with Custom Column Widths and Borders */}
+              {/* Items Table */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
@@ -105,16 +108,16 @@ const App = () => {
                     <tr key={i}>
                       <td style={styles.tdNo}>{i+1}</td>
                       <td style={styles.td}><input style={styles.tdInput} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInput} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} type="number" onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputRight} type="number" onChange={e=>updateRow(i, 'price', e.target.value)} /></td>
-                      <td style={styles.tdTotalValue}>{(row.qty * row.price).toLocaleString()}</td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} type="number" onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.td}><input style={styles.tdInputCenter} type="number" onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* Footer with Aligned Colons */}
+              {/* Bottom Customer & Total Section */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
@@ -122,9 +125,9 @@ const App = () => {
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Address</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, address: e.target.value})} /></div>
                 </div>
                 <div style={styles.summaryBox}>
-                  <div style={styles.totalRow}><span>Total Amount</span> <span>{totalAmount.toLocaleString()}</span></div>
+                  <div style={styles.totalRow}><span>Total Amount</span> <span>{formatNum(totalAmount)}</span></div>
                   <div style={styles.summaryRow}><span>Discount</span> <input style={styles.summaryInput} type="number" onChange={e=>setDiscount(Number(e.target.value))} /></div>
-                  <div style={styles.summaryRow}><span>Balance</span> <span>{balance.toLocaleString()}</span></div>
+                  <div style={styles.summaryRow}><span>Balance</span> <span>{formatNum(balance)}</span></div>
                 </div>
               </div>
 
@@ -136,13 +139,13 @@ const App = () => {
         </div>
       ) : (
         <div style={styles.dashboardArea}>
-          <h2 style={{borderBottom:'2px solid #059669',paddingBottom:'10px'}}>Dashboard - Invoice History</h2>
+          <h2>Dashboard - Invoice History</h2>
           <div style={styles.historyList}>
             {history.map(item => (
               <div key={item.id} style={styles.historyItem}>
                 <span><strong>INV:</strong> {item.invoiceNo || 'N/A'}</span>
                 <span><strong>Customer:</strong> {item.customer?.name}</span>
-                <span><strong>Total:</strong> {item.balance?.toLocaleString()} Ks</span>
+                <span><strong>Total:</strong> {formatNum(item.balance)} Ks</span>
               </div>
             ))}
           </div>
@@ -167,7 +170,7 @@ const styles = {
   a4Sheet: { width: '230mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 0 15px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' },
   header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #059669', paddingBottom: '10px', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '20px', alignItems: 'center' },
-  logoCircle: { width: '80px', height: '80px', border: '2px solid #059669', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
+  logoPlaceholder: { width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
   bizHeader: { textAlign: 'center' },
   bizTitle: { fontSize: '28px', margin: 0 },
   bizSub: { fontSize: '22px', margin: '0 0 5px 0' },
@@ -187,17 +190,16 @@ const styles = {
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
   thNo: { width: '40px', border: '1px solid #000', padding: '10px' },
-  thDesc: { flex: 1, border: '1px solid #000', padding: '10px' }, // Item Description is flexible/widest
-  thUnit: { width: '90px', border: '1px solid #000' }, 
-  thQty: { width: '90px', border: '1px solid #000' },
-  thPrice: { width: '90px', border: '1px solid #000' },
-  thTotal: { width: '130px', border: '1px solid #000' }, // Total Price is widest among numbers
+  thDesc: { flex: 1, border: '1px solid #000', padding: '10px' },
+  thUnit: { width: '80px', border: '1px solid #000' }, 
+  thQty: { width: '80px', border: '1px solid #000' },
+  thPrice: { width: '110px', border: '1px solid #000' },
+  thTotal: { width: '140px', border: '1px solid #000' },
   td: { border: '1px solid #000', padding: 0 },
   tdNo: { border: '1px solid #000', textAlign: 'center', fontSize: '13px' },
   tdTotalValue: { border: '1px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
-  tdInputRight: { width: '100%', border: 'none', textAlign: 'right', paddingRight: '5px', outline: 'none', fontSize: '13px' },
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
   customerBox: { flex: 1.5 },
   dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px', marginLeft: '5px' },

@@ -56,20 +56,6 @@ const App = () => {
 
   return (
     <div style={styles.appContainer}>
-      {/* CSS For Perfect Alignment and Vertical Dotted Line */}
-      <style>{`
-        .item-desc-cell { 
-          position: relative; 
-          border: 1.5px solid #000 !important; 
-        }
-        .item-desc-cell::after {
-          content: "";
-          position: absolute;
-          right: 4px; top: 0; bottom: 0;
-          border-right: 1.5px dotted #000;
-        }
-      `}</style>
-
       <div className="no-print" style={styles.tabBar}>
         <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.activeTab : styles.tab}>New Invoice</button>
         <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.activeTab : styles.tab}>History</button>
@@ -94,7 +80,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Info Rows */}
+              {/* Address Info Rows */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -107,34 +93,33 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with Consistent Column Styles */}
+              {/* Excel Style Table with Solid Lines only */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
-                    <th style={styles.thCol}>No.</th>
-                    <th style={styles.thCol}>Item Description</th>
-                    <th style={styles.thCol}>Unit</th>
-                    <th style={styles.thCol}>Qty</th>
-                    <th style={styles.thCol}>Price</th>
-                    <th style={styles.thCol}>Total Price</th>
+                    <th style={styles.thNo}>No.</th>
+                    <th style={styles.thDesc}>Item Description</th>
+                    <th style={styles.thUnit}>Unit</th>
+                    <th style={styles.thQty}>Qty</th>
+                    <th style={styles.thPrice}>Price</th>
+                    <th style={styles.thTotal}>Total Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
-                      <td style={styles.tdColCenter}>{i+1}</td>
-                      {/* Item Description အကွက်ကို ဘေးကအကွက်တွေလို မျဉ်းအပြည့်လုပ်ပြီး မျဉ်းစက်ပါ ထည့်ထားပါတယ် */}
-                      <td className="item-desc-cell" style={styles.tdInputBox}><input style={styles.tdInputText} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
-                      <td style={styles.tdColTotalValue}>{formatNum(row.qty * row.price)}</td>
+                      <td style={styles.tdCenter}>{i+1}</td>
+                      <td style={styles.tdDesc}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.tdUnit}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.tdQty}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.tdPrice}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
-              {/* Footer */}
+              {/* Customer & Totals */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
@@ -155,7 +140,7 @@ const App = () => {
         </div>
       ) : (
         <div style={styles.dashboardArea}>
-          <h2>Invoice History (Realtime)</h2>
+          <h2>History</h2>
           <div style={styles.historyList}>
             {history.map(item => (
               <div key={item.id} style={styles.historyItem}>
@@ -203,14 +188,27 @@ const styles = {
   invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '6px', textAlign: 'center', fontWeight: 'bold' },
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
+
+  // Table Styles - အားလုံးကို မျဉ်းအဖြောင့် Solid Borders သာသုံးထားသည်
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
-  thCol: { border: '1.5px solid #000', padding: '10px', fontSize: '13px' },
-  tdColCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px', padding: 0 },
-  tdInputBox: { padding: 0 },
-  tdInputText: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
+  thNo: { width: '45px', border: '1.5px solid #000', padding: '10px' },
+  thDesc: { border: '1.5px solid #000', padding: '10px' }, // Widest column
+  thUnit: { width: '90px', border: '1.5px solid #000' },
+  thQty: { width: '90px', border: '1.5px solid #000' },
+  thPrice: { width: '115px', border: '1.5px solid #000' },
+  thTotal: { width: '145px', border: '1.5px solid #000' },
+
+  tdCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
+  tdDesc: { border: '1.5px solid #000', padding: 0 },
+  tdUnit: { border: '1.5px solid #000', padding: 0 },
+  tdQty: { border: '1.5px solid #000', padding: 0 },
+  tdPrice: { border: '1.5px solid #000', padding: 0 },
+  tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
+
+  tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
-  tdColTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
+
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
   customerBox: { flex: 1.5 },
   dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px', marginLeft: '5px' },
@@ -223,15 +221,14 @@ const styles = {
   sigLine: { borderTop: '2px solid black', paddingTop: '5px', fontWeight: 'bold' },
   thanks: { textAlign: 'center', fontSize: '16px', fontWeight: 'bold', marginTop: '30px' },
   actionArea: { display: 'flex', justifyContent: 'center', paddingBottom: '40px' },
-  saveBtn: { width: '230mm', padding: '15px', backgroundColor: '#059669', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  saveBtn: { width: '230mm', padding: '15px', backgroundColor: '#059669', color: 'white', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   loginPage: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0fdf4' },
   loginCard: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' },
   loginInput: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '8px', outline:'none' },
   saveBtnSmall: { width: '100%', padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor:'pointer' },
   dashboardArea: { padding: '20px', maxWidth: '800px', margin: '0 auto' },
   historyList: { display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' },
-  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' },
+  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor:'pointer' },
 };
 
 export default App;
-                

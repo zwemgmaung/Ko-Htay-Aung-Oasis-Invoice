@@ -14,7 +14,7 @@ const App = () => {
 
   const [invoiceNo, setInvoiceNo] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "", address: "" });
-  const [discount, setDiscount] = useState(0);
+  const [discount, setDiscount] = useState(""); // Discount ကို string အနေနဲ့ ထားမယ်
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: "", price: "" })));
 
   useEffect(() => {
@@ -33,9 +33,21 @@ const App = () => {
     return () => unsub();
   }, []);
 
+  // 🔢 Comma Format Logic
+  const formatComma = (val) => {
+    if (!val) return "";
+    const num = val.toString().replace(/,/g, "");
+    if (isNaN(num)) return "";
+    return Number(num).toLocaleString();
+  };
+
   const updateRow = (index, field, value) => {
     const newRows = [...rows];
-    newRows[index][field] = value;
+    if (field === "price") {
+      newRows[index][field] = formatComma(value); // Auto Comma for Price
+    } else {
+      newRows[index][field] = value;
+    }
     setRows(newRows);
   };
 
@@ -46,12 +58,16 @@ const App = () => {
   };
 
   const totalAmount = rows.reduce((sum, row) => sum + calculateTotal(row.qty, row.price), 0);
-  const balance = totalAmount - discount;
+  const discNum = parseFloat(String(discount).replace(/,/g, '')) || 0;
+  const balance = totalAmount - discNum;
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
-      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "invoices"), { 
+        invoiceNo, customer, rows, totalAmount, 
+        discount: discNum, balance, createdAt: serverTimestamp() 
+      });
       const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
@@ -108,7 +124,7 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* Excel Table */}
+                {/* Table */}
                 <table className="excel-table">
                   <thead>
                     <tr><th style={{width: '45px'}}>No.</th><th>Item Description</th><th style={{width: '80px'}}>Unit</th><th style={{width: '65px'}}>Qty</th><th style={{width: '110px'}}>Price</th><th style={{width: '135px'}}>Total Price</th></tr>
@@ -120,32 +136,25 @@ const App = () => {
                         <td><input className="excel-input" value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                         <td><input className="excel-input-center" value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                         <td><input className="excel-input-center" value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                        <td><input className="excel-input-center" value={row.price} onChange={e=>updateRow(i, 'price', e.target.value)} /></td>
+                        {/* Price Input with Auto Comma */}
+                        <td><input className="excel-input-center" value={row.price} onChange={e => updateRow(i, "price", e.target.value)} /></td>
                         <td style={{textAlign:'right', paddingRight:'10px', fontWeight:'bold', fontSize:'13px'}}>{calculateTotal(row.qty, row.price).toLocaleString()}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
 
-                {/* Footer Section - ကိုကိုပြောတဲ့အတိုင်း ပြင်ထားပါတယ် */}
+                {/* Footer Section */}
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
-                    <div style={styles.fRow}>
-                      <span style={styles.fLabel}>Customer Name</span> <span style={styles.colon}>:</span> 
-                      <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} />
-                    </div>
-                    <div style={styles.fRow}>
-                      <span style={styles.fLabel}>Contact No.</span> <span style={styles.colon}>:</span> 
-                      <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} />
-                    </div>
-                    <div style={styles.fRow}>
-                      <span style={styles.fLabel}>Address</span> <span style={styles.colon}>:</span> 
-                      <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} />
-                    </div>
+                    <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
+                    <div style={styles.fRow}><span style={styles.fLabel}>Contact No.</span> <span style={styles.colon}>:</span> <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} /></div>
+                    <div style={styles.fRow}><span style={styles.fLabel}>Address</span> <span style={styles.colon}>:</span> <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                   </div>
                   <div style={styles.summaryArea}>
                     <div style={styles.sRow}>Total: <span>{totalAmount.toLocaleString()}</span></div>
-                    <div style={styles.sRow}>Discount: <input style={styles.sInput} onChange={e=>setDiscount(Number(e.target.value))} /></div>
+                    {/* Discount Input with Auto Comma */}
+                    <div style={styles.sRow}>Discount: <input style={styles.sInput} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
                     <div style={{...styles.sRow, background:'#10b981', color:'white'}}>Balance: <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
@@ -185,7 +194,8 @@ const App = () => {
   );
 };
 
-// ... Styles, LoginSection and InvoiceReadOnly (အပြည့်အစုံ ပါဝင်ပြီးသားပါ) ...
+// --- Styles, LoginSection & InvoiceReadOnly (အပြည့်အစုံ ပါဝင်ပြီးသားပါ) ---
+// (Note: styles object stays exactly as previous response)
 const InvoiceReadOnly = ({ data }) => (
   <div style={styles.a4Sheet}>
     <div style={styles.header}>
@@ -227,7 +237,7 @@ const InvoiceReadOnly = ({ data }) => (
         <p style={{fontSize:'14px'}}><strong>Contact No. :</strong> {data.customer.phone}</p>
         <p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p>
       </div>
-      <div style={styles.summaryArea}>
+      <div style={styles.summaryBox}>
         <div style={styles.sRow}>Total: <span>{data.totalAmount.toLocaleString()}</span></div>
         <div style={styles.sRow}>Discount: <span>{data.discount.toLocaleString()}</span></div>
         <div style={{...styles.sRow, background:'#10b981', color:'white'}}>Balance: <span>{data.balance.toLocaleString()}</span></div>
@@ -295,4 +305,4 @@ const styles = {
 };
 
 export default App;
-  
+        

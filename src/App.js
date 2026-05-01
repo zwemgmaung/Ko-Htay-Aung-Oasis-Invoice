@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { db } from './firebase-config';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, orderBy, serverTimestamp } from "firebase/firestore";
+import html2canvas from 'html2canvas';
 
 const App = () => {
+  const [activeTab, setActiveTab] = useState('invoice'); // 'dashboard' or 'invoice'
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const invoiceRef = useRef(null);
 
   // Invoice Data States
   const [invoiceNo, setInvoiceNo] = useState("");
   const [customer, setCustomer] = useState({ name: "", phone: "", address: "" });
   const [discount, setDiscount] = useState(0);
-  
-  // Table Rows (14 rows)
-  const [rows, setRows] = useState(
-    Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: 0, price: 0 }))
-  );
+  const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: 0, price: 0 })));
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (username.trim() === "Oasis" && password === "Oasis@2000") {
-      localStorage.setItem("isLoggedIn", "true");
-      setIsLoggedIn(true);
-    } else { alert("Login Fail!"); }
+  // Firebase ကနေ History ပြန်ခေါ်မယ်
+  const fetchHistory = async () => {
+    const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setHistory(data);
   };
+
+  useEffect(() => { if (activeTab === 'dashboard') fetchHistory(); }, [activeTab]);
 
   const updateRow = (index, field, value) => {
     const newRows = [...rows];
@@ -35,179 +35,217 @@ const App = () => {
   const totalAmount = rows.reduce((sum, row) => sum + (row.qty * row.price), 0);
   const balance = totalAmount - discount;
 
-  const handleSaveInvoice = async () => {
+  // JPEG အနေနဲ့ သိမ်းပြီး Print ထုတ်မယ်
+  const handleSaveAndCapture = async () => {
+    if (!invoiceRef.current) return;
     try {
+      // ၁။ Firebase မှာ အရင်သိမ်းမယ်
       await addDoc(collection(db, "invoices"), {
         invoiceNo, customer, rows, totalAmount, discount, balance,
         createdAt: serverTimestamp(),
       });
-      alert("အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
-      window.print();
+
+      // ၂။ Screenshot ရိုက်ပြီး JPEG ထုတ်မယ်
+      const canvas = await html2canvas(invoiceRef.current, { scale: 2 });
+      const link = document.createElement('a');
+      link.download = `Oasis_Invoice_${invoiceNo || 'New'}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.9);
+      link.click();
+      alert("JPEG သိမ်းဆည်းပြီး Firebase မှာ မှတ်တမ်းတင်ပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
   };
 
-  if (!isLoggedIn) {
-    return (
-      <div style={styles.loginCenter}>
-        <div style={styles.loginCard}>
-          <div style={styles.logoCircle}>OASIS</div>
-          <h2 style={{color: '#1e293b'}}>LOGIN</h2>
-          <input placeholder="Username" style={styles.loginInput} onChange={e => setUsername(e.target.value)} />
-          <div style={{position:'relative'}}>
-            <input type={showPassword ? "text" : "password"} style={styles.loginInput} placeholder="Password" onChange={e => setPassword(e.target.value)} />
-            <span style={styles.eyeIcon} onClick={() => setShowPassword(!showPassword)}>{showPassword ? "👁️" : "👁️‍🗨️"}</span>
-          </div>
-          <button onClick={handleLogin} style={styles.loginBtn}>Login</button>
-        </div>
-      </div>
-    );
-  }
+  if (!isLoggedIn) return <LoginSection onLogin={() => setIsLoggedIn(true)} />;
 
   return (
-    <div style={styles.bodyWrapper}>
-      <div style={styles.a4Container}>
-        {/* Header Section */}
-        <div style={styles.header}>
-          <div style={styles.headerLeft}>
-            <div style={styles.mainLogo}>Logo</div>
-            <div>
-              <h1 style={styles.bizTitle}>Ko Htay Aung</h1>
-              <h2 style={styles.bizSub}>( Oasis )</h2>
-              <p style={styles.serviceText}>Refrigerator, Washing Machine & Air-Conditioning</p>
-              <p style={styles.serviceText}>Repair, Sales and Services</p>
-            </div>
-          </div>
-          <div style={styles.invoiceBadge}>INVOICE</div>
-        </div>
-
-        {/* Address Row */}
-        <div style={styles.infoRow}>
-          <div style={styles.addressArea}>
-            <p><strong>Address :</strong> B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</p>
-            <p><strong>Contact No. :</strong> 09-421 097 839, 09-795 954 493</p>
-            <p style={{marginLeft: '85px'}}>09-974 989 754</p>
-          </div>
-          <div style={styles.metaArea}>
-            <div style={styles.invNoBox}>
-              <strong>INV NO:</strong> 
-              <input style={styles.invNoInput} value={invoiceNo} onChange={e=>setInvoiceNo(e.target.value)} />
-            </div>
-            <div style={styles.dateBox}>
-              <strong>Date:</strong> {new Date().toLocaleDateString()}
-            </div>
-          </div>
-        </div>
-
-        {/* Table Section */}
-        <div style={styles.tableWrapper}>
-          <table style={styles.mainTable}>
-            <thead>
-              <tr style={styles.tableHeader}>
-                <th style={{...styles.th, width: '40px'}}>No.</th>
-                <th style={styles.th}>Item Description</th>
-                <th style={{...styles.th, width: '80px'}}>Unit</th>
-                <th style={{...styles.th, width: '60px'}}>Qty</th>
-                <th style={{...styles.th, width: '100px'}}>Price</th>
-                <th style={{...styles.th, width: '120px'}}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row, index) => (
-                <tr key={row.id}>
-                  <td style={styles.tdId}>{row.id}</td>
-                  <td style={styles.td}><input style={styles.tableInput} value={row.desc} onChange={e => updateRow(index, "desc", e.target.value)} /></td>
-                  <td style={styles.td}><input style={styles.tableInput} value={row.unit} onChange={e => updateRow(index, "unit", e.target.value)} /></td>
-                  <td style={styles.td}><input style={styles.tableInputCenter} type="number" onChange={e => updateRow(index, "qty", e.target.value)} /></td>
-                  <td style={styles.td}><input style={styles.tableInputRight} type="number" onChange={e => updateRow(index, "price", e.target.value)} /></td>
-                  <td style={styles.tdTotal}>{(row.qty * row.price).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Footer Section */}
-        <div style={styles.footerRow}>
-          <div style={styles.custInfo}>
-            <div style={styles.custInputRow}><strong>Customer Name:</strong> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
-            <div style={styles.custInputRow}><strong>Contact No:</strong> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, phone: e.target.value})} /></div>
-            <div style={styles.custInputRow}><strong>Address:</strong> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, address: e.target.value})} /></div>
-          </div>
-          <div style={styles.summaryArea}>
-            <div style={styles.totalRowGreen}><span>Total Amount</span> <span>{totalAmount.toLocaleString()}</span></div>
-            <div style={styles.summaryRow}><span>Discount</span> <input style={styles.summaryInput} type="number" onChange={e=>setDiscount(Number(e.target.value))} /></div>
-            <div style={styles.summaryRow}><span>Balance</span> <span>{balance.toLocaleString()}</span></div>
-          </div>
-        </div>
-
-        <div style={styles.signatureRow}>
-            <div style={styles.sigBox}>
-              <div style={styles.sigSign}>Zwe</div>
-              <div style={styles.sigLine}>Zwe Htet Naing</div>
-              <div>OASIS</div>
-            </div>
-        </div>
-
-        <p style={styles.thanksText}>Thanks for your business!</p>
-
-        <div className="no-print" style={styles.actionArea}>
-          <button onClick={handleSaveInvoice} style={styles.savePrintBtn}>Save to Firebase & Print</button>
-          <button onClick={() => { localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false); }} style={styles.logoutBtn}>Logout</button>
-        </div>
+    <div style={styles.appContainer}>
+      {/* Navigation Tabs */}
+      <div className="no-print" style={styles.tabBar}>
+        <button onClick={() => {setActiveTab('invoice'); setSelectedInvoice(null);}} style={activeTab === 'invoice' ? styles.activeTab : styles.tab}>New Invoice</button>
+        <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.activeTab : styles.tab}>Invoice History</button>
+        <button onClick={() => {localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false);}} style={styles.logoutTab}>Logout</button>
       </div>
+
+      {activeTab === 'invoice' ? (
+        <div style={styles.contentArea}>
+          <div ref={invoiceRef} style={styles.a4Sheet}>
+             {/* Header Section */}
+             <div style={styles.header}>
+               <div style={styles.headerLeft}>
+                 <div style={styles.logoCircle}>Logo</div>
+                 <div style={styles.bizIdentity}>
+                   <h1 style={styles.bizTitle}>Ko Htay Aung</h1>
+                   <h2 style={styles.bizSub}>( Oasis )</h2>
+                   <p style={styles.serviceText}>Refrigerator, Washing Machine & Air-Conditioning</p>
+                   <p style={styles.serviceText}>Repair, Sales and Services</p>
+                 </div>
+               </div>
+               <div style={styles.invoiceBadge}>INVOICE</div>
+             </div>
+
+             {/* Address & Meta */}
+             <div style={styles.infoGrid}>
+               <div style={styles.addressSection}>
+                 <div style={styles.infoLine}><strong>Address</strong> <span>: B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
+                 <div style={styles.infoLine}><strong>Contact No.</strong> <span>: 09-421 097 839, 09-795 954 493</span></div>
+                 <div style={styles.infoLine}><strong></strong> <span style={{paddingLeft:'12px'}}>09-974 989 754</span></div>
+               </div>
+               <div style={styles.metaSection}>
+                 <div style={styles.invNoBox}>INV NO: <input style={styles.invInput} onChange={e=>setInvoiceNo(e.target.value)} /></div>
+                 <div style={styles.dateBox}>Date: {new Date().toLocaleDateString()}</div>
+               </div>
+             </div>
+
+             {/* Table */}
+             <table style={styles.mainTable}>
+               <thead>
+                 <tr style={styles.tableHeader}>
+                   <th style={styles.thNo}>No.</th>
+                   <th style={styles.thDesc}>Item Description</th>
+                   <th style={styles.thUnit}>Unit</th>
+                   <th style={styles.thQty}>Qty</th>
+                   <th style={styles.thPrice}>Price</th>
+                   <th style={styles.thTotal}>Total Price</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 {rows.map((row, i) => (
+                   <tr key={i}>
+                     <td style={styles.tdCenter}>{i+1}</td>
+                     <td style={styles.td}><input style={styles.tdInput} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                     <td style={styles.td}><input style={styles.tdInput} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                     <td style={styles.td}><input style={styles.tdInputCenter} type="number" onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
+                     <td style={styles.td}><input style={styles.tdInputRight} type="number" onChange={e=>updateRow(i, 'price', e.target.value)} /></td>
+                     <td style={styles.tdTotal}>{(row.qty * row.price).toLocaleString()}</td>
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+
+             {/* Footer Totals */}
+             <div style={styles.footerLayout}>
+               <div style={styles.customerInfo}>
+                 <div style={styles.infoLine}><strong>Customer Name</strong> <span>: <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></span></div>
+                 <div style={styles.infoLine}><strong>Contact No.</strong> <span>: <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, phone: e.target.value})} /></span></div>
+                 <div style={styles.infoLine}><strong>Address</strong> <span>: <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, address: e.target.value})} /></span></div>
+               </div>
+               <div style={styles.summaryBox}>
+                 <div style={styles.totalRow}><span>Total Amount</span> <span>{totalAmount.toLocaleString()}</span></div>
+                 <div style={styles.summaryRow}><span>Discount</span> <input style={styles.summaryInput} onChange={e=>setDiscount(Number(e.target.value))} /></div>
+                 <div style={styles.summaryRow}><span>Balance</span> <span>{balance.toLocaleString()}</span></div>
+               </div>
+             </div>
+
+             <div style={styles.sigArea}>
+                <div style={styles.sigBlock}>
+                  <div style={styles.cursive}>Zwe</div>
+                  <div style={styles.sigLine}>Zwe Htet Naing</div>
+                  <div>OASIS</div>
+                </div>
+             </div>
+             <p style={styles.thanks}>Thanks for your business!</p>
+          </div>
+          <button onClick={handleSaveAndCapture} style={styles.saveBtn}>Save to Firebase & Download JPEG</button>
+        </div>
+      ) : (
+        <div style={styles.dashboardArea}>
+          <h2>Invoice History Dashboard</h2>
+          <div style={styles.historyList}>
+            {history.map(item => (
+              <div key={item.id} style={styles.historyItem} onClick={() => setSelectedInvoice(item)}>
+                <span>📄 {item.invoiceNo || 'No ID'}</span>
+                <span>👤 {item.customer?.name || 'Unknown'}</span>
+                <span>💰 {item.balance?.toLocaleString()} Ks</span>
+              </div>
+            ))}
+          </div>
+          {selectedInvoice && <InvoiceViewer data={selectedInvoice} onClose={() => setSelectedInvoice(null)} />}
+        </div>
+      )}
     </div>
   );
 };
 
+// Login & Viewer Components as Sub-sections...
+const LoginSection = ({ onLogin }) => (
+  <div style={styles.loginPage}>
+    <div style={styles.loginCard}>
+      <div style={styles.logoCircle}>OASIS</div>
+      <h3>Ko Htay Aung (Oasis) Login</h3>
+      <input id="u" placeholder="Username" style={styles.loginInput} />
+      <input id="p" type="password" placeholder="Password" style={styles.loginInput} />
+      <button onClick={() => { if(document.getElementById('u').value.trim() === "Oasis" && document.getElementById('p').value === "Oasis@2000") { localStorage.setItem("isLoggedIn", "true"); onLogin(); } }} style={styles.saveBtn}>Login</button>
+    </div>
+  </div>
+);
+
+const InvoiceViewer = ({ data, onClose }) => (
+  <div style={styles.overlay}>
+    <div style={{...styles.a4Sheet, transform:'scale(0.8)', marginTop:'-50px'}}>
+      <button onClick={onClose} style={styles.closeBtn}>Close</button>
+      {/* ဇယားနဲ့ Header တွေကို အပေါ်ကအတိုင်း data pass ပြီး ပြန်ပြတဲ့ logic... */}
+      <h1 style={{textAlign:'center'}}>Invoice Record: {data.invoiceNo}</h1>
+      <p>Customer: {data.customer.name}</p>
+      <p>Total: {data.totalAmount.toLocaleString()}</p>
+      {/* (မှတ်ချက်။ ။ Viewer မှာ UI အပြည့်ပြန်ထည့်ရပါမယ်) */}
+    </div>
+  </div>
+);
+
 const styles = {
-  bodyWrapper: { backgroundColor: '#cbd5e1', minHeight: '100vh', padding: '20px', display: 'flex', justifyContent: 'center' },
-  a4Container: { backgroundColor: 'white', width: '210mm', padding: '15mm', boxShadow: '0 0 20px rgba(0,0,0,0.2)', position: 'relative', display: 'flex', flexDirection: 'column' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #059669', paddingBottom: '10px', marginBottom: '15px' },
-  headerLeft: { display: 'flex', gap: '20px', alignItems: 'center' },
-  mainLogo: { width: '80px', height: '80px', borderRadius: '50%', border: '2px solid #059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
-  bizTitle: { fontSize: '26px', margin: 0, color: '#1e293b' },
-  bizSub: { fontSize: '20px', margin: 0, color: '#1e293b' },
-  serviceText: { margin: 0, fontSize: '13px', color: '#059669', fontWeight: 'bold' },
-  invoiceBadge: { backgroundColor: '#059669', color: 'white', padding: '10px 40px', fontSize: '24px', fontWeight: 'bold', transform: 'skewX(-20deg)', marginRight: '-15mm' },
-  infoRow: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px', fontSize: '13px' },
-  addressArea: { flex: 2 },
-  metaArea: { flex: 1, textAlign: 'right' },
-  invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '5px 10px', display: 'flex', justifyContent: 'center', gap: '5px' },
-  invNoInput: { background: 'transparent', border: 'none', color: 'white', outline: 'none', borderBottom: '1px solid white', width: '80px', textAlign: 'center' },
-  dateBox: { borderBottom: '1px solid #94a3b8', padding: '5px', marginTop: '5px', textAlign: 'center' },
-  tableWrapper: { overflowX: 'auto' },
-  mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '20px' },
+  appContainer: { backgroundColor: '#f1f5f9', minHeight: '100vh' },
+  tabBar: { display: 'flex', backgroundColor: '#1e293b', padding: '10px 20px', gap: '10px' },
+  tab: { padding: '10px 20px', color: 'white', border: 'none', background: 'transparent', cursor: 'pointer' },
+  activeTab: { padding: '10px 20px', color: 'white', borderBottom: '3px solid #059669', background: '#334155', fontWeight: 'bold' },
+  logoutTab: { marginLeft: 'auto', padding: '10px 20px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '5px' },
+  contentArea: { padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  a4Sheet: { width: '230mm', minHeight: '297mm', padding: '20mm', backgroundColor: 'white', boxShadow: '0 0 20px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' },
+  header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #059669', paddingBottom: '10px', marginBottom: '20px' },
+  headerLeft: { display: 'flex', gap: '25px', alignItems: 'center' },
+  logoCircle: { width: '90px', height: '90px', border: '3px solid #059669', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: '#059669' },
+  bizIdentity: { textAlign: 'center' },
+  bizTitle: { fontSize: '32px', margin: 0 },
+  bizSub: { fontSize: '24px', margin: '0 0 5px 0' },
+  serviceText: { margin: 0, fontSize: '14px', color: '#059669', fontWeight: 'bold' },
+  invoiceBadge: { backgroundColor: '#059669', color: 'white', padding: '10px 50px', fontSize: '28px', fontWeight: 'bold', transform: 'skewX(-20deg)', marginRight: '-20mm' },
+  infoGrid: { display: 'flex', justifyContent: 'space-between', marginBottom: '25px', fontSize: '14px' },
+  infoLine: { display: 'flex', marginBottom: '5px' },
+  addressSection: { flex: 2 },
+  metaSection: { flex: 1 },
+  invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '8px', textAlign: 'center', fontWeight: 'bold' },
+  invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '80px', outline: 'none', textAlign: 'center' },
+  dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '5px' },
+  mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '30px' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
-  th: { border: '1px solid #ddd', padding: '10px', fontSize: '13px' },
-  td: { border: '1px solid #ddd', padding: '0' },
-  tdId: { border: '1px solid #ddd', textAlign: 'center', fontSize: '13px' },
-  tdTotal: { border: '1px solid #ddd', textAlign: 'right', padding: '8px', fontSize: '13px', fontWeight: 'bold' },
-  tableInput: { width: '100%', border: 'none', padding: '8px', outline: 'none', fontSize: '13px' },
-  tableInputCenter: { width: '100%', border: 'none', padding: '8px', outline: 'none', fontSize: '13px', textAlign: 'center' },
-  tableInputRight: { width: '100%', border: 'none', padding: '8px', outline: 'none', fontSize: '13px', textAlign: 'right' },
-  footerRow: { display: 'flex', justifyContent: 'space-between', marginTop: '10px' },
-  custInfo: { flex: 1.5, display: 'flex', flexDirection: 'column', gap: '10px' },
-  custInputRow: { fontSize: '14px', display: 'flex', gap: '5px' },
-  dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted #000', outline: 'none' },
-  summaryArea: { flex: 1, display: 'flex', flexDirection: 'column', gap: '5px' },
-  totalRowGreen: { backgroundColor: '#059669', color: 'white', padding: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' },
-  summaryRow: { backgroundColor: '#d1fae5', color: '#065f46', padding: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' },
-  summaryInput: { background: 'transparent', border: 'none', outline: 'none', textAlign: 'right', width: '80px', color: '#065f46', fontWeight: 'bold' },
-  signatureRow: { display: 'flex', justifyContent: 'flex-end', marginTop: '40px' },
-  sigBox: { textAlign: 'center', width: '200px' },
-  sigSign: { fontFamily: 'cursive', fontSize: '24px', marginBottom: '5px' },
-  sigLine: { borderTop: '1px solid black', paddingTop: '5px', fontWeight: 'bold' },
-  thanksText: { textAlign: 'center', fontWeight: 'bold', fontSize: '16px', marginTop: '30px' },
-  actionArea: { marginTop: '20px', display: 'flex', gap: '10px' },
-  savePrintBtn: { flex: 4, padding: '15px', backgroundColor: '#059669', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' },
-  logoutBtn: { flex: 1, padding: '15px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' },
-  loginCenter: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0fdf4' },
-  loginCard: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '350px', textAlign: 'center' },
-  logoCircle: { width: '70px', height: '70px', borderRadius: '50%', background: '#059669', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontWeight: 'bold' },
-  loginInput: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '8px', outline: 'none' },
-  eyeIcon: { position: 'absolute', right: '15px', top: '12px', cursor: 'pointer' },
-  loginBtn: { width: '100%', padding: '12px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }
+  thNo: { width: '40px', border: '1px solid #ddd', padding: '10px' },
+  thDesc: { border: '1px solid #ddd', padding: '10px' },
+  thUnit: { width: '80px', border: '1px solid #ddd' },
+  thQty: { width: '60px', border: '1px solid #ddd' },
+  thPrice: { width: '120px', border: '1px solid #ddd' },
+  thTotal: { width: '140px', border: '1px solid #ddd' },
+  td: { border: '1px solid #ddd', padding: 0 },
+  tdCenter: { border: '1px solid #ddd', textAlign: 'center' },
+  tdTotal: { border: '1px solid #ddd', textAlign: 'right', padding: '8px', fontWeight: 'bold' },
+  tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none' },
+  tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none' },
+  tdInputRight: { width: '100%', border: 'none', textAlign: 'right', paddingRight: '5px', outline: 'none' },
+  footerLayout: { display: 'flex', justifyContent: 'space-between' },
+  customerInfo: { flex: 1.5 },
+  dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', paddingLeft: '5px' },
+  summaryBox: { flex: 1 },
+  totalRow: { backgroundColor: '#059669', color: 'white', padding: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' },
+  summaryRow: { backgroundColor: '#d1fae5', padding: '10px', display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', borderBottom: '2px solid white' },
+  summaryInput: { border: 'none', background: 'transparent', textAlign: 'right', width: '80px', outline: 'none', fontWeight: 'bold' },
+  sigArea: { display: 'flex', justifyContent: 'flex-end', marginTop: '50px' },
+  sigBlock: { textAlign: 'center', width: '220px' },
+  cursive: { fontFamily: 'cursive', fontSize: '28px' },
+  sigLine: { borderTop: '2px solid black', paddingTop: '5px', fontWeight: 'bold' },
+  thanks: { textAlign: 'center', fontSize: '18px', fontWeight: 'bold', marginTop: '40px' },
+  saveBtn: { width: '230mm', padding: '20px', backgroundColor: '#059669', color: 'white', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '10px', cursor: 'pointer', marginTop: '20px' },
+  dashboardArea: { padding: '40px', maxWidth: '1000px', margin: '0 auto' },
+  historyList: { display: 'grid', gridTemplateColumns: '1fr', gap: '10px' },
+  historyItem: { background: 'white', padding: '15px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }
 };
 
 export default App;
-          
+               

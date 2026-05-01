@@ -56,13 +56,16 @@ const App = () => {
 
   return (
     <div style={styles.appContainer}>
-      {/* CSS For Vertical Dotted Line */}
+      {/* CSS For Perfect Alignment and Vertical Dotted Line */}
       <style>{`
-        .dotted-col { position: relative; border-right: 1.5px solid #000; }
-        .dotted-col::after {
+        .item-desc-cell { 
+          position: relative; 
+          border: 1.5px solid #000 !important; 
+        }
+        .item-desc-cell::after {
           content: "";
           position: absolute;
-          right: 3px; top: 0; bottom: 0;
+          right: 4px; top: 0; bottom: 0;
           border-right: 1.5px dotted #000;
         }
       `}</style>
@@ -91,7 +94,7 @@ const App = () => {
                 <div style={styles.invoiceBadge}>INVOICE</div>
               </div>
 
-              {/* Address Section */}
+              {/* Info Rows */}
               <div style={styles.infoGrid}>
                 <div style={styles.addressBox}>
                   <div style={styles.alignedRow}><span style={styles.label}>Address</span> <span style={styles.colon}>:</span> <span style={styles.value}>B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</span></div>
@@ -104,24 +107,24 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with the requested Vertical Dotted Line */}
+              {/* Table with Consistent Column Styles */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
-                    <th style={styles.thColNo}>No.</th>
-                    <th style={styles.thColDesc}>Item Description</th>
-                    <th style={styles.thColUnit}>Unit</th>
-                    <th style={styles.thColQty}>Qty</th>
-                    <th style={styles.thColPrice}>Price</th>
-                    <th style={styles.thColTotal}>Total Price</th>
+                    <th style={styles.thCol}>No.</th>
+                    <th style={styles.thCol}>Item Description</th>
+                    <th style={styles.thCol}>Unit</th>
+                    <th style={styles.thCol}>Qty</th>
+                    <th style={styles.thCol}>Price</th>
+                    <th style={styles.thCol}>Total Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
                       <td style={styles.tdColCenter}>{i+1}</td>
-                      {/* Item Description col - dotted line is inside the CSS class */}
-                      <td className="dotted-col" style={styles.tdInputBox}><input style={styles.tdInputText} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      {/* Item Description အကွက်ကို ဘေးကအကွက်တွေလို မျဉ်းအပြည့်လုပ်ပြီး မျဉ်းစက်ပါ ထည့်ထားပါတယ် */}
+                      <td className="item-desc-cell" style={styles.tdInputBox}><input style={styles.tdInputText} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                       <td style={styles.tdColCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                       <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
                       <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
@@ -131,7 +134,7 @@ const App = () => {
                 </tbody>
               </table>
 
-              {/* Footer Sections */}
+              {/* Footer */}
               <div style={styles.footerLayout}>
                 <div style={styles.customerBox}>
                   <div style={styles.alignedRow}><span style={styles.labelLong}>Customer Name</span> <span style={styles.colon}>:</span> <input style={styles.dottedInput} onChange={e=>setCustomer({...customer, name: e.target.value})} /></div>
@@ -202,14 +205,9 @@ const styles = {
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
-  thColNo: { width: '45px', border: '1.5px solid #000', padding: '10px' },
-  thColDesc: { border: '1.5px solid #000', padding: '10px' },
-  thColUnit: { width: '90px', border: '1.5px solid #000' },
-  thColQty: { width: '90px', border: '1.5px solid #000' },
-  thColPrice: { width: '115px', border: '1.5px solid #000' },
-  thColTotal: { width: '145px', border: '1.5px solid #000' },
-  tdColCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
-  tdInputBox: { border: '1.5px solid #000', padding: 0 },
+  thCol: { border: '1.5px solid #000', padding: '10px', fontSize: '13px' },
+  tdColCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px', padding: 0 },
+  tdInputBox: { padding: 0 },
   tdInputText: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
   tdColTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
@@ -225,7 +223,7 @@ const styles = {
   sigLine: { borderTop: '2px solid black', paddingTop: '5px', fontWeight: 'bold' },
   thanks: { textAlign: 'center', fontSize: '16px', fontWeight: 'bold', marginTop: '30px' },
   actionArea: { display: 'flex', justifyContent: 'center', paddingBottom: '40px' },
-  saveBtn: { width: '230mm', padding: '15px', backgroundColor: '#059669', color: 'white', fontSize: '18px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
+  saveBtn: { width: '230mm', padding: '15px', backgroundColor: '#059669', color: 'white', fontSize: '16px', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' },
   loginPage: { height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f0fdf4' },
   loginCard: { background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)', width: '320px', textAlign: 'center' },
   loginInput: { width: '100%', padding: '12px', marginBottom: '15px', border: '1px solid #ddd', borderRadius: '8px', outline:'none' },

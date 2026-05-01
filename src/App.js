@@ -9,6 +9,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null); 
+  const [showFullLogo, setShowFullLogo] = useState(false); // Logo အကြီးကြည့်ရန်
   const invoiceRef = useRef(null);
 
   const [invoiceNo, setInvoiceNo] = useState("");
@@ -59,7 +60,8 @@ const App = () => {
   };
 
   if (!isLoggedIn) return <LoginSection onLogin={() => setIsLoggedIn(true)} />;
-    return (
+
+  return (
     <div style={styles.appContainer}>
       <style>{`
         .excel-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 2px solid black; }
@@ -67,11 +69,19 @@ const App = () => {
         .excel-table td { border: 1.2px solid black; padding: 0; height: 38px; vertical-align: middle; }
         .excel-input { width: 100%; height: 100%; border: none; padding: 0 10px; outline: none; font-size: 13px; background: transparent; }
         .excel-input-center { width: 100%; height: 100%; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; }
-        .rotate-logo { transition: transform 0.5s ease; transform: rotate(-20deg); filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2)); }
+        .rotate-logo { transition: transform 0.5s ease; transform: rotate(-20deg); filter: drop-shadow(0 4px 6px rgba(16,185,129,0.2)); cursor: zoom-in; }
+        .rotate-logo:hover { transform: rotate(0deg); }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .pass-container { position: relative; width: 100%; margin-bottom: 20px; }
-        .eye-icon { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #10b981; font-size: 18px; }
+        .logo-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.95); z-index: 3000; display: flex; justify-content: center; align-items: center; cursor: zoom-out; }
       `}</style>
+
+      {/* Full Logo Viewer (Ultra HD Concept) */}
+      {showFullLogo && (
+        <div className="logo-modal" onClick={() => setShowFullLogo(false)}>
+           <img src={OasisLogo} alt="FullLogo" style={{ maxWidth: '90%', maxHeight: '90%', filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))' }} />
+           <div style={{position:'absolute', bottom:'20px', color:'#065f46', fontWeight:'bold'}}>CLICK ANYWHERE TO CLOSE</div>
+        </div>
+      )}
 
       {/* Navbar */}
       <div style={styles.navBar}>
@@ -86,10 +96,16 @@ const App = () => {
         <div style={styles.scrollWrapper}>
           <div style={styles.invoiceOuter}>
             <div ref={invoiceRef} style={styles.a4Sheet}>
-              {/* Header */}
+              {/* Header - Logo ကို နှိပ်ရင် အကြီးပေါ်မယ် */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
-                  <img src={OasisLogo} alt="Logo" className="rotate-logo" style={styles.logoImage} />
+                  <img 
+                    src={OasisLogo} 
+                    alt="Logo" 
+                    className="rotate-logo" 
+                    style={styles.logoImage} 
+                    onClick={() => setShowFullLogo(true)} 
+                  />
                   <div style={styles.bizInfo}>
                     <h1 style={styles.bizTitle}>Ko Htay Aung <span style={styles.bizSub}>( Oasis )</span></h1>
                     <p style={styles.serviceText}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales and Services</p>
@@ -104,7 +120,7 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Excel Table */}
+              {/* Excel Grid Table (Unhouched) */}
               <table className="excel-table">
                 <thead>
                   <tr>
@@ -125,7 +141,7 @@ const App = () => {
                 </tbody>
               </table>
 
-              {/* Footer */}
+              {/* Footer Layout (Unhouched) */}
               <div style={styles.footerFlex}>
                 <div style={styles.customerArea}>
                   <div style={styles.fRow}>Name : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -152,7 +168,6 @@ const App = () => {
           <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>SAVE & DOWNLOAD JPEG</button></div>
         </div>
       ) : (
-        /* History Dashboard */
         <div style={styles.dashboardArea}>
           <h2>History Records</h2>
           <div style={styles.historyGrid}>
@@ -166,7 +181,7 @@ const App = () => {
           </div>
           {selectedInvoice && (
             <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
-              <button style={styles.closeModal} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
+              <button style={{background:'red', color:'white', border:'none', padding:'10px 20px', borderRadius:'5px', cursor:'pointer', fontWeight:'bold', marginBottom:'15px'}} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
               <div onClick={e => e.stopPropagation()}><InvoiceReadOnly data={selectedInvoice} /></div>
             </div>
           )}
@@ -176,7 +191,7 @@ const App = () => {
   );
 };
 
-// 🔐 Login Component with Eye Icon
+// 🔐 Login Component - Password box ညာဘက်မှာ မျက်လုံးပုံထည့်ထားပါတယ်
 const LoginSection = ({ onLogin }) => {
   const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState("");
@@ -185,7 +200,12 @@ const LoginSection = ({ onLogin }) => {
   return (
     <div style={styles.loginBg}>
       <div style={styles.loginCard}>
-        <img src={OasisLogo} alt="Logo" style={styles.logoCircleLarge} />
+        <img 
+          src={OasisLogo} 
+          alt="Logo" 
+          style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit:'cover', margin: '0 auto 15px', border:'2px solid #10b981', cursor:'zoom-in' }} 
+          onClick={() => window.open(OasisLogo, '_blank')}
+        />
         <h2 style={{color: '#064e3b', margin: '0 0 5px 0'}}>Ko Htay Aung ( Oasis )</h2>
         <p style={{fontSize: '11px', color: '#059669', marginBottom: '25px', fontWeight: 'bold'}}>
           Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Service
@@ -197,14 +217,18 @@ const LoginSection = ({ onLogin }) => {
           onChange={(e) => setUser(e.target.value)}
         />
         
-        <div className="pass-container">
+        {/* Password Container - မျက်လုံးပုံကို ညာဘက်အထဲမှာ ထည့်ထားပါတယ် */}
+        <div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}>
           <input 
             type={showPass ? "text" : "password"} 
             placeholder="Password" 
-            style={{...styles.loginInput, marginBottom: 0}} 
+            style={{...styles.loginInput, marginBottom: 0, paddingRight: '45px'}} 
             onChange={(e) => setPass(e.target.value)}
           />
-          <span className="eye-icon" onClick={() => setShowPass(!showPass)}>
+          <span 
+            style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '18px' }} 
+            onClick={() => setShowPass(!showPass)}
+          >
             {showPass ? "👁️" : "🙈"}
           </span>
         </div>
@@ -220,16 +244,17 @@ const LoginSection = ({ onLogin }) => {
   );
 };
 
+// Viewer for History (Unhouched)
 const InvoiceReadOnly = ({ data }) => (
-  <div style={styles.a4Sheet}>
-    <h2 style={{color:'#10b981'}}>Record: {data.invoiceNo}</h2>
-    <p>Customer: {data.customer.name}</p>
-    <table className="excel-table">
-        <thead><tr><th>Description</th><th>Qty</th><th>Total</th></tr></thead>
-        <tbody>{data.rows.map((r, i) => r.desc && <tr key={i}><td>{r.desc}</td><td style={{textAlign:'center'}}>{r.qty}</td><td style={{textAlign:'right', paddingRight:'10px'}}>{(parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,''))).toLocaleString()}</td></tr>)}</tbody>
-    </table>
-    <h3 style={{textAlign:'right'}}>Total: {data.balance.toLocaleString()} Ks</h3>
-  </div>
+    <div style={styles.a4Sheet}>
+      <h2 style={{color:'#10b981'}}>INV: {data.invoiceNo}</h2>
+      <p>Customer: {data.customer.name}</p>
+      <table className="excel-table">
+          <thead><tr><th>Description</th><th>Qty</th><th>Total</th></tr></thead>
+          <tbody>{data.rows.map((r, i) => r.desc && <tr key={i}><td>{r.desc}</td><td style={{textAlign:'center'}}>{r.qty}</td><td style={{textAlign:'right', paddingRight:'10px'}}>{(parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,''))).toLocaleString()}</td></tr>)}</tbody>
+      </table>
+      <h3 style={{textAlign:'right'}}>Total: {data.balance.toLocaleString()} Ks</h3>
+    </div>
 );
 
 const styles = {
@@ -244,7 +269,8 @@ const styles = {
   a4Sheet: { width: '210mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' },
   header: { display: 'flex', justifyContent: 'space-between', borderBottom: '3px solid #10b981', paddingBottom: '15px', marginBottom: '25px' },
   headerLeft: { display: 'flex', gap: '15px', alignItems: 'center' },
-  logoImage: { width: '75px', height: '70px', borderRadius: '50%', border: '2px solid #10b981' },
+  headerRight: { textAlign: 'right' },
+  logoImage: { width: '75px', height: '70px', borderRadius: '50%', border: '2px solid #10b981', objectFit: 'cover' },
   bizInfo: { textAlign: 'left' },
   bizTitle: { fontSize: '24px', margin: 0, color: '#064e3b' },
   bizSub: { color: '#10b981' },
@@ -270,10 +296,8 @@ const styles = {
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', cursor: 'pointer', borderLeft: '8px solid #10b981', boxShadow:'0 4px 6px rgba(0,0,0,0.05)' },
-  closeModal: { background: 'red', color: 'white', border: 'none', padding: '10px 20px', borderRadius:'5px', cursor: 'pointer', fontWeight:'bold', marginBottom:'15px' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#ecfdf5' },
   loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', boxShadow:'0 10px 20px rgba(0,0,0,0.1)', width: '380px' },
-  logoCircleLarge: { width: '100px', height: '100px', borderRadius: '50%', objectFit:'cover', margin: '0 auto 15px', border:'2px solid #10b981' },
   loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', border:'1.5px solid #d1fae5', borderRadius:'8px', outline: 'none' }
 };
 

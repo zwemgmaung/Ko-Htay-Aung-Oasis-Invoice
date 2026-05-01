@@ -90,28 +90,27 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table with Vertical Dotted Line exactly where you specified */}
+              {/* Grid Table with Columns */}
               <table style={styles.mainTable}>
                 <thead>
                   <tr style={styles.tableHeader}>
-                    <th style={styles.thNo}>No.</th>
-                    <th style={styles.thDesc}>Item Description</th>
-                    <th style={styles.thUnit}>Unit</th>
-                    <th style={styles.thQty}>Qty</th>
-                    <th style={styles.thPrice}>Price</th>
-                    <th style={styles.thTotal}>Total Price</th>
+                    <th style={styles.thCol}>No.</th>
+                    <th style={styles.thCol}>Item Description</th>
+                    <th style={styles.thCol}>Unit</th>
+                    <th style={styles.thCol}>Qty</th>
+                    <th style={styles.thCol}>Price</th>
+                    <th style={styles.thCol}>Total Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rows.map((row, i) => (
                     <tr key={i}>
-                      <td style={styles.tdCenter}>{i+1}</td>
-                      {/* ဤနေရာတွင် Dotted Line ကို ညာဘက်အခြမ်းမှာ ထည့်ထားပါတယ် */}
-                      <td style={styles.tdDescDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
-                      <td style={styles.td}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
-                      <td style={styles.tdTotalValue}>{formatNum(row.qty * row.price)}</td>
+                      <td style={styles.tdColCenter}>{i+1}</td>
+                      <td style={styles.tdColDotted}><input style={styles.tdInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={row.qty || ""} onChange={e => updateRow(i, "qty", e.target.value)} /></td>
+                      <td style={styles.tdColCenter}><input style={styles.tdInputCenter} type="text" value={formatNum(row.price)} onChange={e => updateRow(i, "price", e.target.value)} /></td>
+                      <td style={styles.tdColTotal}>{formatNum(row.qty * row.price)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -160,7 +159,7 @@ const LoginSection = ({ onLogin }) => (
 );
 
 const styles = {
-  appContainer: { backgroundColor: '#cbd5e1', minHeight: '100vh', overflowX: 'hidden' },
+  appContainer: { backgroundColor: '#cbd5e1', minHeight: '100vh' },
   tabBar: { display: 'flex', backgroundColor: '#1e293b', padding: '10px', gap: '5px', position: 'sticky', top: 0, zIndex: 100 },
   tab: { padding: '8px 15px', color: 'white', border: 'none', background: 'transparent', fontSize: '14px', cursor:'pointer' },
   activeTab: { padding: '8px 15px', color: 'white', borderBottom: '3px solid #059669', background: '#334155', fontWeight: 'bold' },
@@ -187,21 +186,20 @@ const styles = {
   invNoBox: { backgroundColor: '#1e293b', color: 'white', padding: '6px', textAlign: 'center', fontWeight: 'bold' },
   invInput: { background: 'transparent', border: 'none', borderBottom: '1px solid white', color: 'white', width: '70px', outline: 'none', textAlign: 'center' },
   dateBox: { borderBottom: '1px solid #ddd', textAlign: 'center', padding: '4px' },
+  
+  // Table Borders - တစ်ကွက်ချင်းစီ သီးသန့်ပေါ်စေရန်
   mainTable: { width: '100%', borderCollapse: 'collapse', marginBottom: '25px', border: '1.5px solid #000' },
   tableHeader: { backgroundColor: '#059669', color: 'white' },
-  thNo: { width: '40px', border: '1.5px solid #000', padding: '10px' },
-  thDesc: { flex: 1, border: '1.5px solid #000', padding: '10px' },
-  thUnit: { width: '90px', border: '1.5px solid #000' }, 
-  thQty: { width: '90px', border: '1.5px solid #000' },
-  thPrice: { width: '110px', border: '1.5px solid #000' },
-  thTotal: { width: '140px', border: '1.5px solid #000' },
-  // Vertical Dotted Line for Item Description and Unit
-  tdDescDotted: { border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 },
-  td: { border: '1.5px solid #000', padding: 0 },
-  tdCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
-  tdTotalValue: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
+  thCol: { border: '1.5px solid #000', padding: '10px', fontSize: '13px' },
+  
+  // Cells with Columns logic
+  tdColCenter: { border: '1.5px solid #000', textAlign: 'center', fontSize: '13px' },
+  tdColDotted: { border: '1.5px solid #000', borderRight: '1.5px dotted #000', padding: 0 }, // Description နှင့် Unit ကြားက မျဉ်းစက်
+  tdColTotal: { border: '1.5px solid #000', textAlign: 'right', padding: '8px', fontWeight: 'bold', fontSize: '13px' },
+  
   tdInput: { width: '100%', border: 'none', padding: '10px', outline: 'none', fontSize: '13px' },
   tdInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
+  
   footerLayout: { display: 'flex', justifyContent: 'space-between' },
   customerBox: { flex: 1.5 },
   dottedInput: { flex: 1, border: 'none', borderBottom: '1px dotted black', outline: 'none', fontSize: '13px', marginLeft: '5px' },
@@ -225,4 +223,4 @@ const styles = {
 };
 
 export default App;
-                
+        

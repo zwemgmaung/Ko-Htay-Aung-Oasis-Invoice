@@ -113,9 +113,9 @@ const App = () => {
                         <span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span>
                         <h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1>
                       </div>
-                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
-                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
-                      <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
+                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator,Air-Conditioning Repair,Sales and Services</p>
+                      <p style={styles.headerSmallText}>Address :B-97/7,Nawaday Shophouse,Hlaingtharyar Township,Yangon</p>
+                      <p style={styles.headerSmallText}>Contact No. :09-974 989 754,09-421 097 839,09-767 954 493</p>
                     </div>
                   </div>
                   <div style={styles.headerRight}>
@@ -172,7 +172,7 @@ const App = () => {
                   <div style={styles.sigBox}>
                     <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'-5px'}}>Zwe</div>
                     <div style={styles.sigLine}>Zwe Htet Naing</div>
-                    <div style={{fontSize:'10px', fontWeight:'bold'}}>OASIS</div>
+                    <div style={{fontSize:'20px', fontWeight:'bold'}}> ( OASIS ) </div>
                   </div>
                 </div>
                 <p style={{fontSize:'13px', fontWeight:'bold', marginTop:'5px', marginLeft:'15px'}}>Thanks for your business!</p>

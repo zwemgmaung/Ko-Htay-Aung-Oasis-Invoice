@@ -57,11 +57,7 @@ const App = () => {
     if (!invoiceRef.current) return;
     try {
       await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount: discNum, balance, createdAt: serverTimestamp() });
-      const canvas = await html2canvas(invoiceRef.current, { 
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff"
-      });
+      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
       link.href = canvas.toDataURL('image/jpeg', 0.9);
@@ -107,21 +103,14 @@ const App = () => {
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                     <div style={styles.bizInfo}>
-                      <div style={{display:'flex', alignItems:'baseline'}}>
-                        <span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span>
-                        <h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1>
-                      </div>
+                      <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
                       <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
-                      {/* ✨ Address and Phone fixed to one line */}
-                      <p style={styles.headerSmallText}>Address     :B-97/7,Nawaday Shophouse,Hlaingtharyar,Yangon</p>
-                      <p style={styles.headerSmallText}>Contact No. :09-974 989 754,09-421 097 839,09-767 954 493</p>
+                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
+                      <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                     </div>
                   </div>
                   <div style={styles.headerRight}>
-                    <div className="top-design-container">
-                      <div className="top-black-shape"></div>
-                      <div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div>
-                    </div>
+                    <div className="top-design-container"><div className="top-black-shape"></div><div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div></div>
                     <div style={styles.invNoBox}>INVOICE NO: {invoiceNo}</div>
                     <div style={styles.dateBox}>Invoice Date: {new Date().toLocaleDateString()}</div>
                   </div>
@@ -129,28 +118,25 @@ const App = () => {
 
                 <table className="excel-table">
                   <thead>
-                    <tr>
-                      <th className="th-black" style={{width: '40px'}}>No.</th>
-                      <th className="th-lime">Item description</th>
-                      <th className="th-black" style={{width: '60px'}}>Unit</th>
-                      <th className="th-lime" style={{width: '50px'}}>Qty</th>
-                      <th className="th-black" style={{width: '90px'}}>Price</th>
-                      <th className="th-lime" style={{width: '110px'}}>Total Price</th>
-                    </tr>
+                    <tr><th className="th-black" style={{width: '40px'}}>No.</th><th className="th-lime">Item description</th><th className="th-black" style={{width: '60px'}}>Unit</th><th className="th-lime" style={{width: '50px'}}>Qty</th><th className="th-black" style={{width: '90px'}}>Price</th><th className="th-lime" style={{width: '110px'}}>Total Price</th></tr>
                   </thead>
                   <tbody>
-                    {rows.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td>
-                        <td><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                        <td><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                        <td><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                        <td><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                        <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px', fontWeight:'bold'}}>
-                          {(parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,''))).toLocaleString()}
-                        </td>
-                      </tr>
-                    ))}
+                    {rows.map((row, i) => {
+                      const rowTotal = calculateTotal(row.qty, row.price);
+                      return (
+                        <tr key={i}>
+                          <td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td>
+                          <td><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                          <td><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                          <td><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
+                          <td><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
+                          <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px', fontWeight:'bold'}}>
+                            {/* ✨ Item description ရှိမှသာ ဂဏန်းပေါ်စေပြီး 0 များကို ဖျောက်ထားပါတယ် */}
+                            {row.desc && rowTotal > 0 ? rowTotal.toLocaleString() : ""}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
 
@@ -167,7 +153,6 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* ✨ Signature Section Fixed Alignment */}
                 <div style={styles.signatureArea}>
                   <div style={styles.sigBox}>
                     <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
@@ -177,10 +162,7 @@ const App = () => {
                   </div>
                 </div>
                 <p style={{fontSize:'13px', fontWeight:'bold', marginTop:'5px', marginLeft:'15px'}}>Thanks for your business!</p>
-                <div className="footer-graphic">
-                  <div className="bot-lime"></div>
-                  <div className="bot-black"></div>
-                </div>
+                <div className="footer-graphic"><div className="bot-lime"></div><div className="bot-black"></div></div>
               </div>
             </div>
             <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={{...styles.saveBtn, background:'#8ce100', color: 'white'}}>SAVE & DOWNLOAD JPEG</button></div>
@@ -211,8 +193,8 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
         <div style={styles.bizInfo}>
           <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
           <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Repair, Sales and Services</p>
-          <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p>
-          <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
+          <p style={styles.headerSmallText}>Address     : B-97/7,Nawaday Shophouse,Hlaingtharyar,Yangon</p>
+          <p style={styles.headerSmallText}>Contact No. : 09-974 989 754,09-421 097 839,09-767 954 493</p>
         </div>
       </div>
       <div style={styles.headerRight}>
@@ -223,16 +205,21 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
     </div>
     <table className="excel-table">
       <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
-      <tbody>{data.rows.map((row, i) => (
-          <tr key={i}>
-            <td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td>
-            <td style={{padding:'0 8px', fontSize:'11px'}}>{row.desc}</td>
-            <td style={{textAlign:'center', fontSize:'11px'}}>{row.unit}</td>
-            <td style={{textAlign:'center', fontSize:'11px'}}>{row.qty}</td>
-            <td style={{textAlign:'center', fontSize:'11px'}}>{row.price}</td>
-            <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px'}}>{(parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,''))).toLocaleString()}</td>
-          </tr>
-        ))}</tbody>
+      <tbody>{data.rows.map((row, i) => {
+          const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
+          return (
+            <tr key={i}>
+              <td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td>
+              <td style={{padding:'0 8px', fontSize:'11px'}}>{row.desc}</td>
+              <td style={{textAlign:'center', fontSize:'11px'}}>{row.unit}</td>
+              <td style={{textAlign:'center', fontSize:'11px'}}>{row.qty}</td>
+              <td style={{textAlign:'center', fontSize:'11px'}}>{row.price}</td>
+              <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px'}}>
+                {row.desc && rowTotal > 0 ? rowTotal.toLocaleString() : ""}
+              </td>
+            </tr>
+          )
+        })}</tbody>
     </table>
     <div style={styles.footerFlex}>
       <div style={styles.customerArea}><p style={{fontSize:'13px'}}><strong>Customer :</strong> {data.customer.name}</p><p style={{fontSize:'13px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'13px'}}><strong>Address :</strong> {data.customer.address}</p></div>
@@ -255,7 +242,7 @@ const LoginSection = ({ onLogin }) => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Refrigerator,Washing Machine & Air-Con Repair,Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
+    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Refrigerator, Washing Machine & Air-Con Repair, Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
   );
 };
 
@@ -282,7 +269,7 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '4px', fontSize: '12px' },
   fLabel: { width: '100px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', fontSize:'12px' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', fontSize:'12px' },
   summaryArea: { width: '240px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderBottom: '1.5px solid #000', fontSize:'12px' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000', fontSize:'12px' },

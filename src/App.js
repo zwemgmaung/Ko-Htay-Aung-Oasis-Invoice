@@ -71,22 +71,19 @@ const App = () => {
   return (
     <div style={styles.appContainer}>
       <style>{`
-        .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; }
+        .excel-table { width: 100%; border-collapse: collapse; border: 1.5 solid #000; }
         .excel-table td { border: 1.5px solid #000; padding: 0; height: 35px; }
         .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; }
-        
         .top-design-container { position: relative; width: 320px; height: 80px; }
         .top-black-shape { position: absolute; right: 0; top: 15px; width: 280px; height: 50px; background: #231f20; clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
         .top-lime-shape { position: absolute; right: 80px; top: 0; width: 220px; height: 45px; background: #8ce100; clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); z-index: 2; display: flex; align-items: center; justify-content: center; }
         .invoice-text { color: white; font-size: 24px; font-weight: bold; letter-spacing: 2px; }
-
         .footer-graphic { position: relative; width: 100%; height: 60px; margin-top: 20px; }
         .bot-black { position: absolute; left: 45%; bottom: 0; width: 55%; height: 30px; background: #231f20; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); z-index: 2; }
         .bot-lime { position: absolute; left: 52%; bottom: 10px; width: 48%; height: 35px; background: #8ce100; clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
-        
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; }
       `}</style>
 
       <div className="no-print" style={styles.navBar}>
@@ -159,9 +156,11 @@ const App = () => {
                     <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                   </div>
                   <div style={styles.summaryArea}>
-                    <div style={{...styles.sRow, background:'#8ce100', color:'#fff'}}>Total Amount <span>{totalAmount.toLocaleString()}</span></div>
+                    {/* ✨ Total Amount: Font Color Black */}
+                    <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight: 'bold'}}>Total Amount <span>{totalAmount.toLocaleString()}</span></div>
                     <div style={{...styles.sRow, background:'#b8e986'}}>Discount <input style={styles.sInput} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
-                    <div style={{...styles.sRow, background:'#8ce100', color:'#fff', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
+                    {/* ✨ Balance: BG Black, Font Color White */}
+                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
 
@@ -249,9 +248,9 @@ const InvoiceReadOnly = ({ data }) => (
         <p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p>
       </div>
       <div style={styles.summaryArea}>
-        <div style={styles.sRow}>Total: <span>{data.totalAmount.toLocaleString()}</span></div>
-        <div style={styles.sRow}>Discount: <span>{data.discount.toLocaleString()}</span></div>
-        <div style={{...styles.sRow, background:'#8ce100', color:'#fff', fontWeight:'bold'}}>Balance: <span>{data.balance.toLocaleString()}</span></div>
+        <div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{data.totalAmount.toLocaleString()}</span></div>
+        <div style={styles.sRow}>Discount <span>{data.discount.toLocaleString()}</span></div>
+        <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div>
       </div>
     </div>
     <div className="footer-graphic" style={{marginTop:'50px'}}>
@@ -292,10 +291,10 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '5px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', background: 'transparent' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
-  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold' },
+  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000' },
   signatureArea: { marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '180px' },
   sigLine: { borderTop: '2px solid #000', marginTop: '5px', fontWeight:'bold' },
@@ -306,8 +305,8 @@ const styles = {
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
   loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '350px' },
-  loginInput: { display:'block', margin:'10px auto', padding:'10px', width:'100%' }
+  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%' }
 };
 
 export default App;
-          
+  

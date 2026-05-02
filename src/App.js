@@ -34,6 +34,7 @@ const App = () => {
   const formatComma = (val) => {
     if (!val) return "";
     const num = val.toString().replace(/,/g, "");
+    if (val.toString().includes('%')) return val; // % ပါရင် comma မထည့်ပါ
     return isNaN(num) ? "" : Number(num).toLocaleString();
   };
 
@@ -50,13 +51,25 @@ const App = () => {
   };
 
   const totalAmount = rows.reduce((sum, row) => sum + calculateTotal(row.qty, row.price), 0);
-  const discNum = parseFloat(String(discount).replace(/,/g, '')) || 0;
-  const balance = totalAmount - discNum;
+
+  // ✨ Discount % Logic ပြင်ဆင်ထားပါတယ် ကိုကို
+  const getDiscountValue = () => {
+    if (!discount) return 0;
+    const cleanDisc = String(discount).replace(/,/g, '');
+    if (cleanDisc.includes('%')) {
+      const percent = parseFloat(cleanDisc.replace('%', '')) || 0;
+      return (totalAmount * percent) / 100;
+    }
+    return parseFloat(cleanDisc) || 0;
+  };
+
+  const discountValue = getDiscountValue();
+  const balance = totalAmount - discountValue;
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
-      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount: discNum, balance, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
       const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
@@ -86,7 +99,7 @@ const App = () => {
         .modal-content-wrapper { display: flex; justify-content: center; align-items: flex-start; min-width: fit-content; }
         .close-modal-btn { background: #dc2626; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; left: 20px; z-index: 3100; }
       `}</style>
-      <div className="no-print" style={styles.navBar}>
+        <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
           <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.navBtnActive : styles.navBtn}>HISTORY</button>
@@ -104,8 +117,8 @@ const App = () => {
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                     <div style={styles.bizInfo}>
                       <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
-                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator,Air-Conditioning Repair,Sales and Services</p>
-                      <p style={styles.headerSmallText}>Address     : B-97/7,Nawaday Shophouse,Hlaingtharyar, Yangon</p>
+                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
+                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar, Yangon</p>
                       <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                     </div>
                   </div>
@@ -130,10 +143,7 @@ const App = () => {
                           <td><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                           <td><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
                           <td><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                          <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px', fontWeight:'bold'}}>
-                            {/* ✨ Item description ရှိမှသာ ဂဏန်းပေါ်စေပြီး 0 များကို ဖျောက်ထားပါတယ် */}
-                            {row.desc && rowTotal > 0 ? rowTotal.toLocaleString() : ""}
-                          </td>
+                          <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px', fontWeight:'bold'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td>
                         </tr>
                       );
                     })}
@@ -148,7 +158,7 @@ const App = () => {
                   </div>
                   <div style={styles.summaryArea}>
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight: 'bold'}}>Total Amount <span>{totalAmount.toLocaleString()}</span></div>
-                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight: 'bold'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight: 'bold'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} placeholder="0 or 10%" onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
@@ -185,57 +195,39 @@ const App = () => {
   );
 };
 
-const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
-  <div style={{...styles.a4Sheet, margin: '20px auto', minWidth: '210mm'}}>
-    <div style={styles.header}>
-      <div style={styles.headerLeft}>
-        <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
-        <div style={styles.bizInfo}>
-          <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
-          <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Repair, Sales and Services</p>
-          <p style={styles.headerSmallText}>Address     : B-97/7,Nawaday Shophouse,Hlaingtharyar,Yangon</p>
-          <p style={styles.headerSmallText}>Contact No. : 09-974 989 754,09-421 097 839,09-767 954 493</p>
-        </div>
+const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
+  const tAmt = data.totalAmount || 0;
+  const disc = data.discount || "";
+  const getDVal = () => {
+    if (!disc) return 0;
+    const clean = String(disc).replace(/,/g, '');
+    if (clean.includes('%')) {
+      return (tAmt * parseFloat(clean.replace('%', ''))) / 100;
+    }
+    return parseFloat(clean) || 0;
+  };
+  return (
+    <div style={{...styles.a4Sheet, margin: '20px auto', minWidth: '210mm'}}>
+      <div style={styles.header}>
+        <div style={styles.headerLeft}><img src={OasisLogo} alt="Logo" style={styles.logoImage} /><div style={styles.bizInfo}><div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div><p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales and Services</p><p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p><p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p></div></div>
+        <div style={styles.headerRight}><div className="top-design-container"><div className="top-black-shape"></div><div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div></div><div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div><div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div></div>
       </div>
-      <div style={styles.headerRight}>
-        <div className="top-design-container"><div className="top-black-shape"></div><div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div></div>
-        <div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div>
-        <div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div>
+      <table className="excel-table">
+        <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
+        <tbody>{data.rows.map((row, i) => {
+            const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
+            return (<tr key={i}><td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td><td style={{padding:'0 8px', fontSize:'11px'}}>{row.desc}</td><td style={{textAlign:'center', fontSize:'11px'}}>{row.unit}</td><td style={{textAlign:'center', fontSize:'11px'}}>{row.qty}</td><td style={{textAlign:'center', fontSize:'11px'}}>{row.price}</td><td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td></tr>)
+          })}</tbody>
+      </table>
+      <div style={styles.footerFlex}>
+        <div style={styles.customerArea}><p style={{fontSize:'13px'}}><strong>Customer :</strong> {data.customer.name}</p><p style={{fontSize:'13px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p></div>
+        <div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{tAmt.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <span>{disc}</span></div><div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div>
       </div>
+      <div style={styles.signatureArea}><div style={styles.sigBox}><div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div><div style={styles.sigLine}></div><div style={{fontSize:'12px', fontWeight:'bold', marginTop: '5px'}}>Zwe Htet Naing</div><div style={{fontSize:'11px', fontWeight:'bold'}}>( OASIS )</div></div></div>
+      <div className="footer-graphic" style={{marginTop:'auto', paddingTop:'30px'}}><div className="bot-lime"></div><div className="bot-black"></div></div>
     </div>
-    <table className="excel-table">
-      <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
-      <tbody>{data.rows.map((row, i) => {
-          const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
-          return (
-            <tr key={i}>
-              <td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td>
-              <td style={{padding:'0 8px', fontSize:'11px'}}>{row.desc}</td>
-              <td style={{textAlign:'center', fontSize:'11px'}}>{row.unit}</td>
-              <td style={{textAlign:'center', fontSize:'11px'}}>{row.qty}</td>
-              <td style={{textAlign:'center', fontSize:'11px'}}>{row.price}</td>
-              <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px'}}>
-                {row.desc && rowTotal > 0 ? rowTotal.toLocaleString() : ""}
-              </td>
-            </tr>
-          )
-        })}</tbody>
-    </table>
-    <div style={styles.footerFlex}>
-      <div style={styles.customerArea}><p style={{fontSize:'13px'}}><strong>Customer :</strong> {data.customer.name}</p><p style={{fontSize:'13px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'13px'}}><strong>Address :</strong> {data.customer.address}</p></div>
-      <div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{data.totalAmount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <span>{data.discount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div>
-    </div>
-    <div style={styles.signatureArea}>
-      <div style={styles.sigBox}>
-        <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
-        <div style={styles.sigLine}></div>
-        <div style={{fontSize:'12px', fontWeight:'bold', marginTop: '5px'}}>Zwe Htet Naing</div>
-        <div style={{fontSize:'11px', fontWeight:'bold'}}>( OASIS )</div>
-      </div>
-    </div>
-    <div className="footer-graphic" style={{marginTop:'auto', paddingTop:'30px'}}><div className="bot-lime"></div><div className="bot-black"></div></div>
-  </div>
-);
+  );
+};
 
 const LoginSection = ({ onLogin }) => {
   const [showPass, setShowPass] = useState(false);
@@ -284,7 +276,7 @@ const styles = {
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
   loginCard: { background:'white', padding:'35px', borderRadius:'15px', textAlign:'center', width: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
   loginLogo: { width: '90px', height: '90px', borderRadius: '50%', border: '2px solid #8ce100', marginBottom: '12px', objectFit: 'cover' },
-  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box', fontSize:'14px' }
+  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box', fontSize:'14px' }
 };
 
 export default App;

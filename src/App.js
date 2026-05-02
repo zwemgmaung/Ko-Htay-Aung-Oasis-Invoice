@@ -111,8 +111,8 @@ const App = () => {
                         <h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
                       </div>
                       <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
-                      <p style={styles.headerSmallText}>Address : B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</p>
-                      <p style={styles.headerSmallText}>Phone : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
+                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
+                      <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                     </div>
                   </div>
                   <div style={styles.headerRight}>
@@ -155,7 +155,7 @@ const App = () => {
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
                     <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
-                    <div style={styles.fRow}><span style={styles.fLabel}>Phone Number</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} /></div>
+                    <div style={styles.fRow}><span style={styles.fLabel}>Contact No.</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} /></div>
                     <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                   </div>
                   <div style={styles.summaryArea}>
@@ -212,8 +212,8 @@ const InvoiceReadOnly = ({ data }) => (
             <h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
           </div>
           <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Repair, Sales and Services</p>
-          <p style={styles.headerSmallText}>Address : B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</p>
-          <p style={styles.headerSmallText}>Phone : 09-974 989 754, 09-421 097 839</p>
+          <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
+          <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p>
         </div>
       </div>
       <div style={styles.headerRight}>
@@ -244,8 +244,8 @@ const InvoiceReadOnly = ({ data }) => (
     </table>
     <div style={styles.footerFlex}>
       <div style={styles.customerArea}>
-        <p style={{fontSize:'14px'}}><strong>Customer :</strong> {data.customer.name}</p>
-        <p style={{fontSize:'14px'}}><strong>Phone :</strong> {data.customer.phone}</p>
+        <p style={{fontSize:'14px'}}><strong>Customer Name :</strong> {data.customer.name}</p>
+        <p style={{fontSize:'14px'}}><strong>Contact No. :</strong> {data.customer.phone}</p>
         <p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p>
       </div>
       <div style={styles.summaryArea}>
@@ -292,7 +292,7 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '5px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
+  footerIn: { border:'none', borderBottom:'1px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold' },

@@ -113,8 +113,8 @@ const App = () => {
                       </div>
                       <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
                       {/* ✨ Address and Phone fixed to one line */}
-                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
-                      <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
+                      <p style={styles.headerSmallText}>Address     :B-97/7,Nawaday Shophouse,Hlaingtharyar,Yangon</p>
+                      <p style={styles.headerSmallText}>Contact No. :09-974 989 754,09-421 097 839,09-767 954 493</p>
                     </div>
                   </div>
                   <div style={styles.headerRight}>
@@ -255,7 +255,7 @@ const LoginSection = ({ onLogin }) => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Repair, Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
+    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Refrigerator,Washing Machine & Air-Con Repair,Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
   );
 };
 

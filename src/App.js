@@ -104,8 +104,8 @@ const App = () => {
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                     <div style={styles.bizInfo}>
                       <div style={{display:'flex', alignItems:'baseline'}}>
-                        <span style={{fontSize:'35px', fontWeight:'bold'}}>Ko Htay Aung</span>
-                        <h1 style={{fontSize:'35px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
+                        <span style={{fontSize:'30px', fontWeight:'bold'}}>Ko Htay Aung</span>
+                        <h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
                       </div>
                       <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
                       <p style={styles.headerSmallText}>Address : B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</p>

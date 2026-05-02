@@ -6,7 +6,6 @@ import OasisLogo from './oasis-logo.png';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('invoice');
-  // ✨ LocalStorage ကနေ login status ကို အမြဲစစ်ပေးထားလို့ Refresh လုပ်လည်း logout မဖြစ်တော့ပါဘူး
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null); 
@@ -67,10 +66,7 @@ const App = () => {
     } catch (e) { alert("Error: " + e.message); }
   };
 
-  if (!isLoggedIn) return <LoginSection onLogin={() => {
-    localStorage.setItem("isLoggedIn", "true");
-    setIsLoggedIn(true);
-  }} />;
+  if (!isLoggedIn) return <LoginSection onLogin={() => { localStorage.setItem("isLoggedIn", "true"); setIsLoggedIn(true); }} />;
 
   return (
     <div style={styles.appContainer}>
@@ -86,15 +82,18 @@ const App = () => {
         .footer-graphic { position: relative; width: 100%; height: 60px; margin-top: 20px; }
         .bot-black { position: absolute; left: 45%; bottom: 0; width: 55%; height: 30px; background: #231f20; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); z-index: 2; }
         .bot-lime { position: absolute; left: 52%; bottom: 10px; width: 48%; height: 35px; background: #8ce100; clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; }
+        
+        /* ✨ Modal အကျယ်ကို Zoom ဆွဲလို့ရအောင် ပြင်ထားပါတယ်ရှင် */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 3000; overflow: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        .modal-content-wrapper { display: flex; justify-content: center; align-items: flex-start; min-width: fit-content; }
+        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; left: 20px; z-index: 3100; }
       `}</style>
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
           <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.navBtnActive : styles.navBtn}>HISTORY</button>
         </div>
-        <button onClick={() => {localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false);}} style={styles.logoutBtn}>LOGOUT</button>
+        <button onClick={() => { localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false); }} style={styles.logoutBtn}>LOGOUT</button>
       </div>
       <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
@@ -191,8 +190,10 @@ const App = () => {
       {selectedInvoice && (
         <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
           <button className="close-modal-btn" onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
-          <div onClick={e => e.stopPropagation()}>
-            <InvoiceReadOnly data={selectedInvoice} styles={styles} OasisLogo={OasisLogo} />
+          <div className="modal-content-wrapper">
+             <div onClick={e => e.stopPropagation()}>
+                <InvoiceReadOnly data={selectedInvoice} styles={styles} OasisLogo={OasisLogo} />
+             </div>
           </div>
         </div>
       )}
@@ -200,9 +201,8 @@ const App = () => {
   );
 };
 
-// 🔐 Invoice View for History
 const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
-  <div style={styles.a4Sheet}>
+  <div style={{...styles.a4Sheet, margin: '20px auto'}}>
     <div style={styles.header}>
       <div style={styles.headerLeft}>
         <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
@@ -249,6 +249,10 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
         <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div>
       </div>
     </div>
+    <div className="footer-graphic" style={{marginTop:'auto', paddingTop:'50px'}}>
+      <div className="bot-lime"></div>
+      <div className="bot-black"></div>
+    </div>
   </div>
 );
 
@@ -260,7 +264,6 @@ const LoginSection = ({ onLogin }) => {
     <div style={styles.loginBg}>
       <div style={styles.loginCard}>
         <img src={OasisLogo} alt="Logo" style={styles.loginLogo} />
-        {/* ✨ " Ko Htay Aung ( OASIS ) " စာသားပြင်ဆင်ထားပါတယ် */}
         <h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2>
         <p style={{fontSize: '12px', color: '#8ce100', fontWeight: 'bold', marginBottom: '25px'}}>Refrigerator, Air-Conditioning Repair, Sales & Service</p>
         <input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} />
@@ -299,7 +302,7 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '5px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', boxSizing:'border-box' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
   sInput: { width: '100%', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000' },
@@ -318,4 +321,3 @@ const styles = {
 };
 
 export default App;
-  

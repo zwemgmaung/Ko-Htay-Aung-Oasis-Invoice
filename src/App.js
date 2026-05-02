@@ -57,11 +57,9 @@ const App = () => {
     if (!invoiceRef.current) return;
     try {
       await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount: discNum, balance, createdAt: serverTimestamp() });
-      // ✨ html2canvas setting ကို ပြင်ထားလို့ လက်မှတ်ရော အကုန်ပါလာပါလိမ့်မယ်
       const canvas = await html2canvas(invoiceRef.current, { 
         scale: 2,
         useCORS: true,
-        logging: false,
         backgroundColor: "#ffffff"
       });
       const link = document.createElement('a');
@@ -113,9 +111,10 @@ const App = () => {
                         <span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span>
                         <h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1>
                       </div>
-                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator,Air-Conditioning Repair,Sales and Services</p>
-                      <p style={styles.headerSmallText}>Address :B-97/7,Nawaday Shophouse,Hlaingtharyar Township,Yangon</p>
-                      <p style={styles.headerSmallText}>Contact No. :09-974 989 754,09-421 097 839,09-767 954 493</p>
+                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
+                      {/* ✨ Address and Phone fixed to one line */}
+                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
+                      <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                     </div>
                   </div>
                   <div style={styles.headerRight}>
@@ -123,8 +122,8 @@ const App = () => {
                       <div className="top-black-shape"></div>
                       <div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div>
                     </div>
-                    <div style={styles.invNoBox}>INV NO: {invoiceNo}</div>
-                    <div style={styles.dateBox}>Date: {new Date().toLocaleDateString()}</div>
+                    <div style={styles.invNoBox}>INVOICE NO: {invoiceNo}</div>
+                    <div style={styles.dateBox}>Invoice Date: {new Date().toLocaleDateString()}</div>
                   </div>
                 </div>
 
@@ -163,16 +162,18 @@ const App = () => {
                   </div>
                   <div style={styles.summaryArea}>
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight: 'bold'}}>Total Amount <span>{totalAmount.toLocaleString()}</span></div>
-                    <div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight: 'bold'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
 
+                {/* ✨ Signature Section Fixed Alignment */}
                 <div style={styles.signatureArea}>
                   <div style={styles.sigBox}>
-                    <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'-5px'}}>Zwe</div>
-                    <div style={styles.sigLine}>Zwe Htet Naing</div>
-                    <div style={{fontSize:'20px', fontWeight:'bold'}}> ( OASIS ) </div>
+                    <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
+                    <div style={styles.sigLine}></div>
+                    <div style={{fontSize:'12px', fontWeight:'bold', marginTop: '5px'}}>Zwe Htet Naing</div>
+                    <div style={{fontSize:'11px', fontWeight:'bold'}}>( OASIS )</div>
                   </div>
                 </div>
                 <p style={{fontSize:'13px', fontWeight:'bold', marginTop:'5px', marginLeft:'15px'}}>Thanks for your business!</p>
@@ -211,7 +212,7 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
           <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
           <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Repair, Sales and Services</p>
           <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p>
-          <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p>
+          <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
         </div>
       </div>
       <div style={styles.headerRight}>
@@ -237,7 +238,14 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
       <div style={styles.customerArea}><p style={{fontSize:'13px'}}><strong>Customer :</strong> {data.customer.name}</p><p style={{fontSize:'13px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'13px'}}><strong>Address :</strong> {data.customer.address}</p></div>
       <div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{data.totalAmount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <span>{data.discount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div>
     </div>
-    <div style={styles.signatureArea}><div style={styles.sigBox}><div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive'}}>Zwe</div><div style={styles.sigLine}>Zwe Htet Naing</div><div style={{fontSize:'10px'}}>OASIS</div></div></div>
+    <div style={styles.signatureArea}>
+      <div style={styles.sigBox}>
+        <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
+        <div style={styles.sigLine}></div>
+        <div style={{fontSize:'12px', fontWeight:'bold', marginTop: '5px'}}>Zwe Htet Naing</div>
+        <div style={{fontSize:'11px', fontWeight:'bold'}}>( OASIS )</div>
+      </div>
+    </div>
     <div className="footer-graphic" style={{marginTop:'auto', paddingTop:'30px'}}><div className="bot-lime"></div><div className="bot-black"></div></div>
   </div>
 );
@@ -247,7 +255,7 @@ const LoginSection = ({ onLogin }) => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
+    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Repair, Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
   );
 };
 
@@ -260,12 +268,12 @@ const styles = {
   logoutBtn: { position:'absolute', right:'10px', background:'#dc2626', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontWeight:'bold', fontSize:'11px' },
   scrollWrapper: { padding: '10px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto' },
-  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' },
+  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 10mm 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
   headerLeft: { display: 'flex', gap: '12px', alignItems: 'center', flex: 1 },
   headerRight: { textAlign: 'right', width: '280px' },
   logoImage: { width: '80px', height: '80px', objectFit: 'cover' },
-  headerSmallText: { fontSize: '10.5px', margin: '2px 0', color: '#555', fontWeight:'bold' },
+  headerSmallText: { fontSize: '10.5px', margin: '2px 0', color: '#555', fontWeight:'bold', maxWidth: '450px' },
   invNoBox: { background: '#231f20', color: 'white', padding: '5px 12px', fontSize:'12px', fontWeight:'bold', marginTop:'8px', display: 'inline-block' },
   dateBox: { fontSize:'11px', color:'#777', marginTop:'4px', fontWeight:'bold' },
   cellInput: { width: '100%', height: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '11px', background: 'transparent' },
@@ -278,19 +286,19 @@ const styles = {
   summaryArea: { width: '240px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderBottom: '1.5px solid #000', fontSize:'12px' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000', fontSize:'12px' },
-  signatureArea: { marginTop: '15px', display: 'flex', justifyContent: 'flex-end', paddingRight:'15px' },
-  sigBox: { textAlign: 'center', width: '160px' },
-  sigLine: { borderTop: '2px solid #000', marginTop: '5px', fontWeight:'bold' },
+  signatureArea: { marginTop: '20px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
+  sigBox: { textAlign: 'center', width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  sigLine: { borderTop: '1.5px solid #000', width: '100%' },
   btnCenter: { textAlign:'center', marginTop:'15px', paddingBottom:'40px' },
   saveBtn: { padding: '10px 35px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', fontSize:'14px' },
   dashboardArea: { padding: '30px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' },
   hCard: { background: 'white', padding: '15px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
-  loginCard: { background:'white', padding:'35px', borderRadius:'15px', textAlign:'center', width: '350px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
+  loginCard: { background:'white', padding:'35px', borderRadius:'15px', textAlign:'center', width: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
   loginLogo: { width: '90px', height: '90px', borderRadius: '50%', border: '2px solid #8ce100', marginBottom: '12px', objectFit: 'cover' },
-  loginInput: { display:'block', margin:'12px auto', padding:'10px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box', fontSize:'14px' }
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box', fontSize:'14px' }
 };
 
 export default App;
-                                           
+          

@@ -68,16 +68,19 @@ const App = () => {
   };
 
   if (!isLoggedIn) return <LoginSection onLogin={() => setIsLoggedIn(true)} />;
-    return (
+
+  return (
     <div style={styles.appContainer}>
       <style>{`
         .excel-table { width: 100%; border-collapse: collapse; table-layout: fixed; border: 1.5px solid #000; }
-        .excel-table th { border: 1.5px solid #000; background-color: #7ed321; color: #fff; padding: 10px; font-size: 13px; font-weight: bold; }
+        .excel-table th { border: 1.5px solid #000; background-color: #6fb616; color: #fff; padding: 10px; font-size: 13px; font-weight: bold; }
         .excel-table td { border: 1.5px solid #000; padding: 0; height: 35px; vertical-align: middle; }
         .excel-input { width: 100%; height: 100%; border: none; padding: 0 8px; outline: none; font-size: 13px; background: transparent; }
         .excel-input-center { width: 100%; height: 100%; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; }
-        .invoice-badge-container { position: relative; background: #2c3e50; color: white; padding: 15px 40px; font-weight: bold; clip-path: polygon(15% 0%, 100% 0%, 100% 100%, 0% 100%); }
-        .invoice-badge-green { position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: #7ed321; clip-path: polygon(0 0, 100% 0, 70% 100%, 0 100%); }
+        
+        .inv-header-badge { display: flex; align-items: stretch; height: 45px; overflow: hidden; margin-bottom: 10px; }
+        .badge-green-part { background: #6fb616; width: 35px; clip-path: polygon(0 0, 100% 0, 45% 100%, 0 100%); }
+        .badge-black-part { background: #231f20; color: white; display: flex; align-items: center; padding-left: 15px; padding-right: 40px; font-size: 20px; font-weight: bold; clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); margin-left: -15px; }
       `}</style>
 
       {/* Nav Bar */}
@@ -99,23 +102,23 @@ const App = () => {
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} onClick={() => setShowFullLogo(true)} />
                     <div style={styles.bizInfo}>
-                      <h1 style={styles.bizTitle}>Ko Htay Aung <span style={{color: '#7ed321'}}>( Oasis )</span></h1>
-                      <p style={{...styles.serviceText, color: '#7ed321'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
+                      <h1 style={styles.bizTitle}>Ko Htay Aung <span style={{color: '#6fb616'}}>( Oasis )</span></h1>
+                      <p style={{...styles.serviceText, color: '#6fb616'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
                       <p style={styles.headerSmallText}>Address : B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</p>
                       <p style={styles.headerSmallText}>Contact No : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                     </div>
                   </div>
                   <div style={styles.headerRight}>
-                    <div className="invoice-badge-container">
-                      <div className="invoice-badge-green"></div>
-                      <span style={{position:'relative', zIndex: 1, fontSize:'20px'}}>INVOICE</span>
+                    <div className="inv-header-badge">
+                      <div className="badge-green-part"></div>
+                      <div className="badge-black-part">INVOICE</div>
                     </div>
                     <div style={styles.invNoBox}>INV NO: {invoiceNo}</div>
                     <div style={styles.dateBox}>Date: {new Date().toLocaleDateString()}</div>
                   </div>
                 </div>
 
-                {/* Excel Style Table */}
+                {/* Table */}
                 <table className="excel-table">
                   <thead>
                     <tr><th style={{width: '45px'}}>No.</th><th>Item Description</th><th style={{width: '70px'}}>Unit</th><th style={{width: '60px'}}>Qty</th><th style={{width: '100px'}}>Price</th><th style={{width: '125px'}}>Total Price</th></tr>
@@ -142,85 +145,83 @@ const App = () => {
                     <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                   </div>
                   <div style={styles.summaryArea}>
-                    <div style={{...styles.sRow, background:'#7ed321'}}>Total Amount: <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
-                    <div style={{...styles.sRow, background:'#b8e986'}}>Discount: <input style={styles.sInput} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
-                    <div style={{...styles.sRow, background:'#7ed321', fontWeight:'bold'}}>Balance: <span>{balance.toLocaleString()}</span></div>
+                    <div style={{...styles.sRow, background:'#6fb616', color:'white'}}>Total Amount: <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
+                    <div style={{...styles.sRow, background:'#f1f1f1'}}>Discount: <input style={styles.sInput} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                    <div style={{...styles.sRow, background:'#6fb616', color:'white', fontWeight:'bold'}}>Balance: <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
 
                 <div style={styles.signatureArea}><div style={styles.sigBox}><div style={styles.sigName}>Zwe</div><div style={styles.sigLine}>Zwe Htet Naing</div><div style={{fontSize:'10px'}}>OASIS</div></div></div>
-                <p style={{textAlign:'center', fontSize:'14px', fontWeight:'bold', color:'#7ed321', marginTop:'20px'}}>Thanks for your business!</p>
               </div>
             </div>
-            <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>SAVE & DOWNLOAD JPEG</button></div>
+            <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={{...styles.saveBtn, background:'#6fb616'}}>SAVE & DOWNLOAD JPEG</button></div>
           </div>
         ) : (
           <div style={styles.dashboardArea}>
-            <h2 style={{color:'#7ed321'}}>History Records</h2>
+            <h2 style={{color:'#6fb616'}}>History Records</h2>
             <div style={styles.historyGrid}>
               {history.map(item => (
-                <div key={item.id} style={{...styles.hCard, borderLeftColor:'#7ed321'}} onClick={() => setSelectedInvoice(item)}>
+                <div key={item.id} style={{...styles.hCard, borderLeftColor:'#6fb616'}} onClick={() => setSelectedInvoice(item)}>
                   <p><strong>INV:</strong> {item.invoiceNo}</p>
                   <p><strong>Name:</strong> {item.customer?.name || 'N/A'}</p>
-                  <p style={{color:'#7ed321'}}><strong>Total:</strong> {item.balance?.toLocaleString()} Ks</p>
+                  <p style={{color:'#6fb616'}}><strong>Total:</strong> {item.balance?.toLocaleString()} Ks</p>
                 </div>
               ))}
             </div>
           </div>
         )}
       </div>
-
-      {selectedInvoice && (
-        <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
-          <button className="close-modal-btn" onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
-          <div onClick={e => e.stopPropagation()}><InvoiceReadOnly data={selectedInvoice} /></div>
-        </div>
-      )}
     </div>
   );
 };
 
-// ... LoginSection and InvoiceReadOnly stay updated with same color theme ...
+const LoginSection = ({ onLogin }) => {
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  return (
+    <div style={styles.loginBg}><div style={styles.loginCard}><h2 style={{color: '#231f20'}}>Ko Htay Aung ( Oasis )</h2><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><input type="password" placeholder="Password" style={styles.loginInput} onChange={(e) => setPass(e.target.value)} /><button onClick={() => { if(user.trim() === "Oasis" && pass === "Oasis@2000") onLogin(); }} style={{...styles.saveBtn, background:'#6fb616', width:'100%'}}>Login</button></div></div>
+  );
+};
 
 const styles = {
   appContainer: { backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: 'sans-serif' },
-  navBar: { display: 'flex', justifyContent: 'center', background: '#2c3e50', padding: '10px 15px', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, alignItems: 'center' },
+  navBar: { display: 'flex', justifyContent: 'center', background: '#231f20', padding: '10px 15px', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000 },
   navLinks: { display: 'flex', gap: '20px' },
-  navBtn: { background: 'none', border: 'none', color: '#bdc3c7', cursor: 'pointer', fontWeight:'bold', fontSize:'13px' },
-  navBtnActive: { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight:'bold', borderBottom:'3px solid #7ed321', fontSize:'13px' },
-  logoutBtn: { position:'absolute', right:'10px', background:'#e74c3c', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontWeight:'bold', fontSize:'11px' },
+  navBtn: { background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontWeight:'bold' },
+  navBtnActive: { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight:'bold', borderBottom:'3px solid #6fb616' },
+  logoutBtn: { position:'absolute', right:'10px', background:'#e74c3c', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px' },
   scrollWrapper: { padding: '10px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto' },
   a4Sheet: { width: '210mm', minHeight: '297mm', padding: '15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column' },
-  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '25px' },
+  header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '15px', alignItems: 'center' },
   headerRight: { textAlign: 'right', display:'flex', flexDirection:'column', alignItems:'flex-end' },
-  logoImage: { width: '80px', height: '80px', objectFit: 'cover' },
+  logoImage: { width: '85px', height: '85px', objectFit: 'cover' },
   bizTitle: { fontSize: '24px', margin: 0, color: '#333' },
   serviceText: { fontSize: '12px', margin: '3px 0', fontWeight: 'bold' },
   headerSmallText: { fontSize: '10px', margin: '2px 0', color: '#555' },
-  invoiceBadge: { padding: '10px 40px', fontWeight: 'bold', fontSize:'20px', marginBottom:'5px' },
-  invNoBox: { background: '#2c3e50', color: 'white', padding: '5px 15px', marginTop: '10px', fontSize:'13px', fontWeight:'bold' },
+  invNoBox: { background: '#231f20', color: 'white', padding: '5px 15px', fontSize:'13px', fontWeight:'bold', marginTop:'5px' },
   dateBox: { fontSize:'11px', color:'#777', marginTop:'5px' },
-  footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '30px' },
+  footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '25px' },
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1px solid #7ed321', outline:'none', flex: 1, marginRight: '20px' },
+  footerIn: { border:'none', borderBottom:'1px solid #6fb616', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '250px', border: '1.5px solid #000' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #000', fontSize:'13px' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #000', fontSize:'12px' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold' },
   signatureArea: { marginTop: '50px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '180px' },
   sigName: { fontFamily: 'cursive', fontSize: '20px' },
   sigLine: { borderTop: '1.5px solid #000', marginTop: '5px' },
-  saveBtn: { padding: '15px 50px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', fontSize:'16px' },
+  saveBtn: { padding: '15px 50px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', fontSize:'16px', color:'white' },
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
-  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', boxShadow:'0 10px 20px rgba(0,0,0,0.1)', width: '380px' }
+  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '380px' },
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc' }
 };
 
 export default App;
-        
+          

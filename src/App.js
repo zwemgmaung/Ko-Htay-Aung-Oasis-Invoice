@@ -9,7 +9,6 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null); 
-  const [showFullLogo, setShowFullLogo] = useState(false);
   const invoiceRef = useRef(null);
 
   const [invoiceNo, setInvoiceNo] = useState("");
@@ -266,7 +265,7 @@ const LoginSection = ({ onLogin }) => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><h2>OASIS LOGIN</h2><input placeholder="User" style={styles.loginInput} onChange={e=>setUser(e.target.value)}/><input type="password" placeholder="Pass" style={styles.loginInput} onChange={e=>setPass(e.target.value)}/><button onClick={()=>{if(user==="Oasis" && pass==="Oasis@2000") onLogin()}} style={{background:'#8ce100', padding:'10px', width:'100%', border:'none', cursor:'pointer'}}>Login</button></div></div>
+    <div style={styles.loginBg}><div style={styles.loginCard}><h2>OASIS LOGIN</h2><input placeholder="User" style={styles.loginInput} onChange={e=>setUser(e.target.value)}/><input type="password" placeholder="Pass" style={styles.loginInput} onChange={e=>setPass(e.target.value)}/><button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{background:'#8ce100', padding:'10px', width:'100%', border:'none', cursor:'pointer', fontWeight:'bold'}}>Login</button></div></div>
   );
 };
 
@@ -307,7 +306,7 @@ const styles = {
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
   loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '350px' },
-  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%' }
+  loginInput: { display:'block', margin:'10px auto', padding:'10px', width:'100%' }
 };
 
 export default App;

@@ -92,7 +92,7 @@ const App = () => {
         </div>
         <button onClick={() => {localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false);}} style={styles.logoutBtn}>LOGOUT</button>
       </div>
-        <div style={{ marginTop: '70px' }}>
+          <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
@@ -296,7 +296,7 @@ const styles = {
   footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
-  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000' },
+  sInput: { width: '100%', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000' },
   signatureArea: { marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '180px' },
   sigLine: { borderTop: '2px solid #000', marginTop: '5px', fontWeight:'bold' },
@@ -308,8 +308,7 @@ const styles = {
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
   loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
   loginLogo: { width: '100px', height: '100px', borderRadius: '50%', border: '2px solid #8ce100', marginBottom: '15px', objectFit: 'cover' },
-  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none' }
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box' }
 };
 
 export default App;
-          

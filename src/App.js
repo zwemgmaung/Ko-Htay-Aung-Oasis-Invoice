@@ -255,7 +255,7 @@ const LoginSection = ({ onLogin }) => {
     <div style={styles.loginBg}>
       <div style={styles.loginCard}>
         <img src={OasisLogo} alt="Logo" style={styles.loginLogo} />
-        <h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( Oasis )</h2>
+        <h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2>
         <p style={{fontSize: '12px', color: '#8ce100', fontWeight: 'bold', marginBottom: '25px'}}>Refrigerator, Air-Conditioning Repair, Sales & Service</p>
         <input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} />
         <div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}>

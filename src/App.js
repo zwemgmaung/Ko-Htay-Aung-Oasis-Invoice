@@ -71,7 +71,7 @@ const App = () => {
   return (
     <div style={styles.appContainer}>
       <style>{`
-        .excel-table { width: 100%; border-collapse: collapse; border: 1.5 solid #000; }
+        .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; }
         .excel-table td { border: 1.5px solid #000; padding: 0; height: 35px; }
         .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; }
@@ -93,12 +93,12 @@ const App = () => {
         </div>
         <button onClick={() => {localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false);}} style={styles.logoutBtn}>LOGOUT</button>
       </div>
-
-      <div style={{ marginTop: '70px' }}>
+        <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
               <div ref={invoiceRef} style={styles.a4Sheet}>
+                {/* Header Section */}
                 <div style={styles.header}>
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
@@ -122,6 +122,7 @@ const App = () => {
                   </div>
                 </div>
 
+                {/* Table */}
                 <table className="excel-table">
                   <thead>
                     <tr>
@@ -149,6 +150,7 @@ const App = () => {
                   </tbody>
                 </table>
 
+                {/* Footer Section */}
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
                     <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -156,11 +158,9 @@ const App = () => {
                     <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                   </div>
                   <div style={styles.summaryArea}>
-                    {/* ✨ Total Amount: Font Color Black */}
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight: 'bold'}}>Total Amount <span>{totalAmount.toLocaleString()}</span></div>
-                    <div style={{...styles.sRow, background:'#b8e986'}}>Discount <input style={styles.sInput} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
-                    {/* ✨ Balance: BG Black, Font Color White */}
-                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
+                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight: 'bold'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                    <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
 
@@ -211,7 +211,7 @@ const InvoiceReadOnly = ({ data }) => (
             <h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
           </div>
           <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Repair, Sales and Services</p>
-          <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
+          <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p>
           <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p>
         </div>
       </div>
@@ -249,8 +249,8 @@ const InvoiceReadOnly = ({ data }) => (
       </div>
       <div style={styles.summaryArea}>
         <div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{data.totalAmount.toLocaleString()}</span></div>
-        <div style={styles.sRow}>Discount <span>{data.discount.toLocaleString()}</span></div>
-        <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div>
+        <div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <span>{data.discount.toLocaleString()}</span></div>
+        <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div>
       </div>
     </div>
     <div className="footer-graphic" style={{marginTop:'50px'}}>
@@ -264,7 +264,7 @@ const LoginSection = ({ onLogin }) => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><h2>OASIS LOGIN</h2><input placeholder="User" style={styles.loginInput} onChange={e=>setUser(e.target.value)}/><input type="password" placeholder="Pass" style={styles.loginInput} onChange={e=>setPass(e.target.value)}/><button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{background:'#8ce100', padding:'10px', width:'100%', border:'none', cursor:'pointer', fontWeight:'bold'}}>Login</button></div></div>
+    <div style={styles.loginBg}><div style={styles.loginCard}><h2>OASIS LOGIN</h2><input placeholder="Username" style={styles.loginInput} onChange={e=>setUser(e.target.value)}/><input type="password" placeholder="Password" style={styles.loginInput} onChange={e=>setPass(e.target.value)}/><button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{background:'#8ce100', padding:'12px', width:'100%', border:'none', borderRadius:'8px', fontWeight:'bold', cursor:'pointer'}}>Login</button></div></div>
   );
 };
 
@@ -304,9 +304,9 @@ const styles = {
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
-  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '350px' },
-  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%' }
+  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '380px' },
+  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%', borderRadius:'8px', border:'1px solid #ccc' }
 };
 
 export default App;
-  
+          

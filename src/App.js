@@ -85,7 +85,6 @@ const App = () => {
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
         .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; }
       `}</style>
-
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
@@ -98,7 +97,6 @@ const App = () => {
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
               <div ref={invoiceRef} style={styles.a4Sheet}>
-                {/* Header Section */}
                 <div style={styles.header}>
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
@@ -122,7 +120,6 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* Table */}
                 <table className="excel-table">
                   <thead>
                     <tr>
@@ -150,7 +147,6 @@ const App = () => {
                   </tbody>
                 </table>
 
-                {/* Footer Section */}
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
                     <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -178,7 +174,7 @@ const App = () => {
                 </div>
               </div>
             </div>
-            <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={{...styles.saveBtn, background:'#8ce100'}}>SAVE & DOWNLOAD JPEG</button></div>
+            <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={{...styles.saveBtn, background:'#8ce100', color: 'white'}}>SAVE & DOWNLOAD JPEG</button></div>
           </div>
         ) : (
           <div style={styles.dashboardArea}>
@@ -192,7 +188,7 @@ const App = () => {
         <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
           <button className="close-modal-btn" onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
           <div onClick={e => e.stopPropagation()}>
-            <InvoiceReadOnly data={selectedInvoice} />
+            <InvoiceReadOnly data={selectedInvoice} styles={styles} OasisLogo={OasisLogo} />
           </div>
         </div>
       )}
@@ -200,7 +196,7 @@ const App = () => {
   );
 };
 
-const InvoiceReadOnly = ({ data }) => (
+const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
   <div style={styles.a4Sheet}>
     <div style={styles.header}>
       <div style={styles.headerLeft}>
@@ -216,18 +212,13 @@ const InvoiceReadOnly = ({ data }) => (
         </div>
       </div>
       <div style={styles.headerRight}>
-        <div className="top-design-container">
-          <div className="top-black-shape"></div>
-          <div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div>
-        </div>
+        <div className="top-design-container"><div className="top-black-shape"></div><div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div></div>
         <div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div>
         <div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div>
       </div>
     </div>
     <table className="excel-table">
-      <thead>
-        <tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr>
-      </thead>
+      <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
       <tbody>
         {data.rows.map((row, i) => (
           <tr key={i}>
@@ -253,18 +244,29 @@ const InvoiceReadOnly = ({ data }) => (
         <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div>
       </div>
     </div>
-    <div className="footer-graphic" style={{marginTop:'50px'}}>
-      <div className="bot-lime"></div>
-      <div className="bot-black"></div>
-    </div>
   </div>
 );
 
 const LoginSection = ({ onLogin }) => {
+  const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><h2>OASIS LOGIN</h2><input placeholder="Username" style={styles.loginInput} onChange={e=>setUser(e.target.value)}/><input type="password" placeholder="Password" style={styles.loginInput} onChange={e=>setPass(e.target.value)}/><button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{background:'#8ce100', padding:'12px', width:'100%', border:'none', borderRadius:'8px', fontWeight:'bold', cursor:'pointer'}}>Login</button></div></div>
+    <div style={styles.loginBg}>
+      <div style={styles.loginCard}>
+        <img src={OasisLogo} alt="Logo" style={styles.loginLogo} />
+        <h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( Oasis )</h2>
+        <p style={{fontSize: '12px', color: '#8ce100', fontWeight: 'bold', marginBottom: '25px'}}>Refrigerator, Air-Conditioning Repair, Sales & Service</p>
+        <input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} />
+        <div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}>
+          <input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '45px'}} onChange={(e) => setPass(e.target.value)} />
+          <span style={{ position: 'absolute', right: '15px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', fontSize: '18px' }} onClick={() => setShowPass(!showPass)}>
+            {showPass ? "👁️" : "🙈"}
+          </span>
+        </div>
+        <button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button>
+      </div>
+    </div>
   );
 };
 
@@ -277,7 +279,7 @@ const styles = {
   logoutBtn: { position:'absolute', right:'10px', background:'#dc2626', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontWeight:'bold', fontSize:'11px' },
   scrollWrapper: { padding: '10px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto' },
-  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 0 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 10mm 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '15px', alignItems: 'center', flex: 1 },
   headerRight: { textAlign: 'right', width: '320px' },
@@ -291,7 +293,7 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '5px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', background: 'transparent' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000' },
@@ -299,13 +301,14 @@ const styles = {
   sigBox: { textAlign: 'center', width: '180px' },
   sigLine: { borderTop: '2px solid #000', marginTop: '5px', fontWeight:'bold' },
   btnCenter: { textAlign:'center', marginTop:'20px', paddingBottom:'50px' },
-  saveBtn: { padding: '12px 40px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', color: 'white' },
+  saveBtn: { padding: '12px 40px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold' },
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
-  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '380px' },
-  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%', borderRadius:'8px', border:'1px solid #ccc' }
+  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
+  loginLogo: { width: '100px', height: '100px', borderRadius: '50%', border: '2px solid #8ce100', marginBottom: '15px', objectFit: 'cover' },
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none' }
 };
 
 export default App;

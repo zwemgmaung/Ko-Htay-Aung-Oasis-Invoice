@@ -6,6 +6,7 @@ import OasisLogo from './oasis-logo.png';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('invoice');
+  // ✨ LocalStorage ကနေ login status ကို အမြဲစစ်ပေးထားလို့ Refresh လုပ်လည်း logout မဖြစ်တော့ပါဘူး
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null); 
@@ -66,7 +67,10 @@ const App = () => {
     } catch (e) { alert("Error: " + e.message); }
   };
 
-  if (!isLoggedIn) return <LoginSection onLogin={() => setIsLoggedIn(true)} />;
+  if (!isLoggedIn) return <LoginSection onLogin={() => {
+    localStorage.setItem("isLoggedIn", "true");
+    setIsLoggedIn(true);
+  }} />;
 
   return (
     <div style={styles.appContainer}>
@@ -92,7 +96,7 @@ const App = () => {
         </div>
         <button onClick={() => {localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false);}} style={styles.logoutBtn}>LOGOUT</button>
       </div>
-          <div style={{ marginTop: '70px' }}>
+      <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
@@ -196,6 +200,7 @@ const App = () => {
   );
 };
 
+// 🔐 Invoice View for History
 const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
   <div style={styles.a4Sheet}>
     <div style={styles.header}>
@@ -255,6 +260,7 @@ const LoginSection = ({ onLogin }) => {
     <div style={styles.loginBg}>
       <div style={styles.loginCard}>
         <img src={OasisLogo} alt="Logo" style={styles.loginLogo} />
+        {/* ✨ " Ko Htay Aung ( OASIS ) " စာသားပြင်ဆင်ထားပါတယ် */}
         <h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2>
         <p style={{fontSize: '12px', color: '#8ce100', fontWeight: 'bold', marginBottom: '25px'}}>Refrigerator, Air-Conditioning Repair, Sales & Service</p>
         <input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} />
@@ -293,7 +299,7 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '5px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', boxSizing:'border-box' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
   sInput: { width: '100%', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000' },
@@ -312,3 +318,4 @@ const styles = {
 };
 
 export default App;
+  

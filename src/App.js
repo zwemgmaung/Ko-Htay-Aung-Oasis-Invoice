@@ -9,6 +9,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null); 
+  const [showFullLogo, setShowFullLogo] = useState(false);
   const invoiceRef = useRef(null);
 
   const [invoiceNo, setInvoiceNo] = useState("");
@@ -43,17 +44,20 @@ const App = () => {
     setRows(newRows);
   };
 
-  const totalAmount = rows.reduce((sum, row) => {
-    const q = parseFloat(row.qty) || 0;
-    const p = parseFloat(String(row.price).replace(/,/g, '')) || 0;
-    return sum + (q * p);
-  }, 0);
-  const balance = totalAmount - (parseFloat(String(discount).replace(/,/g, '')) || 0);
+  const calculateTotal = (qty, price) => {
+    const q = parseFloat(qty) || 0;
+    const p = parseFloat(String(price).replace(/,/g, '')) || 0;
+    return q * p;
+  };
+
+  const totalAmount = rows.reduce((sum, row) => sum + calculateTotal(row.qty, row.price), 0);
+  const discNum = parseFloat(String(discount).replace(/,/g, '')) || 0;
+  const balance = totalAmount - discNum;
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
-      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
+      await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount: discNum, balance, createdAt: serverTimestamp() });
       const canvas = await html2canvas(invoiceRef.current, { scale: 2 });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
@@ -73,16 +77,17 @@ const App = () => {
         .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; }
         
-        /* 🎨 Top Invoice Design Match */
         .top-design-container { position: relative; width: 320px; height: 80px; }
         .top-black-shape { position: absolute; right: 0; top: 15px; width: 280px; height: 50px; background: #231f20; clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
         .top-lime-shape { position: absolute; right: 80px; top: 0; width: 220px; height: 45px; background: #8ce100; clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); z-index: 2; display: flex; align-items: center; justify-content: center; }
         .invoice-text { color: white; font-size: 24px; font-weight: bold; letter-spacing: 2px; }
 
-        /* 🎨 Bottom Footer Design Match */
         .footer-graphic { position: relative; width: 100%; height: 60px; margin-top: 20px; }
         .bot-black { position: absolute; left: 45%; bottom: 0; width: 55%; height: 30px; background: #231f20; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); z-index: 2; }
         .bot-lime { position: absolute; left: 52%; bottom: 10px; width: 48%; height: 35px; background: #8ce100; clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 2000; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; top: 0; z-index: 3000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
       `}</style>
 
       <div className="no-print" style={styles.navBar}>
@@ -98,7 +103,6 @@ const App = () => {
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
               <div ref={invoiceRef} style={styles.a4Sheet}>
-                {/* Header Section */}
                 <div style={styles.header}>
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
@@ -122,7 +126,6 @@ const App = () => {
                   </div>
                 </div>
 
-                {/* Table */}
                 <table className="excel-table">
                   <thead>
                     <tr>
@@ -150,7 +153,6 @@ const App = () => {
                   </tbody>
                 </table>
 
-                {/* Footer Section */}
                 <div style={styles.footerFlex}>
                   <div style={styles.customerArea}>
                     <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -171,10 +173,7 @@ const App = () => {
                     <div style={{fontSize:'10px', fontWeight:'bold'}}>OASIS</div>
                   </div>
                 </div>
-
                 <p style={{fontSize:'16px', fontWeight:'bold', marginTop:'5px', marginLeft:'20px'}}>Thanks for your business!</p>
-                
-                {/* 🎨 Bottom Graphic Match */}
                 <div className="footer-graphic">
                   <div className="bot-lime"></div>
                   <div className="bot-black"></div>
@@ -190,9 +189,78 @@ const App = () => {
           </div>
         )}
       </div>
+
+      {selectedInvoice && (
+        <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
+          <button className="close-modal-btn" onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
+          <div onClick={e => e.stopPropagation()}>
+            <InvoiceReadOnly data={selectedInvoice} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+const InvoiceReadOnly = ({ data }) => (
+  <div style={styles.a4Sheet}>
+    <div style={styles.header}>
+      <div style={styles.headerLeft}>
+        <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
+        <div style={styles.bizInfo}>
+          <div style={{display:'flex', alignItems:'baseline'}}>
+            <span style={{fontSize:'20px', fontWeight:'bold'}}>Ko Htay Aung</span>
+            <h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
+          </div>
+          <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Repair, Sales and Services</p>
+          <p style={styles.headerSmallText}>Address : B97/7, Nawaday Shophouse, Hlaingthaya Township, Yangon</p>
+          <p style={styles.headerSmallText}>Phone : 09-974 989 754, 09-421 097 839</p>
+        </div>
+      </div>
+      <div style={styles.headerRight}>
+        <div className="top-design-container">
+          <div className="top-black-shape"></div>
+          <div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div>
+        </div>
+        <div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div>
+        <div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div>
+      </div>
+    </div>
+    <table className="excel-table">
+      <thead>
+        <tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr>
+      </thead>
+      <tbody>
+        {data.rows.map((row, i) => (
+          <tr key={i}>
+            <td style={{textAlign:'center', fontSize:'12px'}}>{i+1}</td>
+            <td style={{padding:'0 10px', fontSize:'12px'}}>{row.desc}</td>
+            <td style={{textAlign:'center', fontSize:'12px'}}>{row.unit}</td>
+            <td style={{textAlign:'center', fontSize:'12px'}}>{row.qty}</td>
+            <td style={{textAlign:'center', fontSize:'12px'}}>{row.price}</td>
+            <td style={{textAlign:'right', paddingRight:'10px', fontSize:'12px'}}>{(parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,''))).toLocaleString()}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+    <div style={styles.footerFlex}>
+      <div style={styles.customerArea}>
+        <p style={{fontSize:'14px'}}><strong>Customer :</strong> {data.customer.name}</p>
+        <p style={{fontSize:'14px'}}><strong>Phone :</strong> {data.customer.phone}</p>
+        <p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p>
+      </div>
+      <div style={styles.summaryArea}>
+        <div style={styles.sRow}>Total: <span>{data.totalAmount.toLocaleString()}</span></div>
+        <div style={styles.sRow}>Discount: <span>{data.discount.toLocaleString()}</span></div>
+        <div style={{...styles.sRow, background:'#8ce100', color:'#fff', fontWeight:'bold'}}>Balance: <span>{data.balance.toLocaleString()}</span></div>
+      </div>
+    </div>
+    <div className="footer-graphic" style={{marginTop:'50px'}}>
+      <div className="bot-lime"></div>
+      <div className="bot-black"></div>
+    </div>
+  </div>
+);
 
 const LoginSection = ({ onLogin }) => {
   const [user, setUser] = useState("");
@@ -204,11 +272,11 @@ const LoginSection = ({ onLogin }) => {
 
 const styles = {
   appContainer: { backgroundColor: '#f4f7f6', minHeight: '100vh', fontFamily: 'sans-serif' },
-  navBar: { display: 'flex', justifyContent: 'center', background: '#231f20', padding: '10px 15px', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000 },
+  navBar: { display: 'flex', justifyContent: 'center', background: '#231f20', padding: '10px 15px', position: 'fixed', top: 0, left: 0, right: 0, zIndex: 2000, alignItems: 'center' },
   navLinks: { display: 'flex', gap: '20px' },
-  navBtn: { background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontWeight:'bold' },
-  navBtnActive: { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight:'bold', borderBottom:'3px solid #8ce100' },
-  logoutBtn: { position:'absolute', right:'10px', background:'#e74c3c', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px' },
+  navBtn: { background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontWeight:'bold', fontSize:'13px' },
+  navBtnActive: { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight:'bold', borderBottom:'3px solid #8ce100', fontSize:'13px' },
+  logoutBtn: { position:'absolute', right:'10px', background:'#dc2626', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontWeight:'bold', fontSize:'11px' },
   scrollWrapper: { padding: '10px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto' },
   a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 0 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
@@ -225,7 +293,7 @@ const styles = {
   customerArea: { flex: 1.5 },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '5px', fontSize: '13px' },
   fLabel: { width: '110px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold' },
@@ -236,10 +304,10 @@ const styles = {
   saveBtn: { padding: '12px 40px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', color: 'white' },
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
-  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100' },
+  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
   loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '350px' },
-  loginInput: { display:'block', margin:'10px auto', padding:'10px', width:'100%' }
+  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%' }
 };
 
 export default App;

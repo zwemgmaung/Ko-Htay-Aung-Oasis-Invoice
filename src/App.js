@@ -104,7 +104,7 @@ const App = () => {
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                     <div style={styles.bizInfo}>
                       <div style={{display:'flex', alignItems:'baseline'}}>
-                        <span style={{fontSize:'20px', fontWeight:'bold'}}>Ko Htay Aung</span>
+                        <span style={{fontSize:'40px', fontWeight:'bold'}}>Ko Htay Aung</span>
                         <h1 style={{fontSize:'35px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
                       </div>
                       <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>

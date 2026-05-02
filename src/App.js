@@ -6,6 +6,7 @@ import OasisLogo from './oasis-logo.png';
 
 const App = () => {
   const [activeTab, setActiveTab] = useState('invoice');
+  // ✨ အမြဲ Login ဖြစ်နေစေဖို့ LocalStorage သုံးထားပါတယ် ကိုကို
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem("isLoggedIn") === "true");
   const [history, setHistory] = useState([]);
   const [selectedInvoice, setSelectedInvoice] = useState(null); 
@@ -82,9 +83,7 @@ const App = () => {
         .footer-graphic { position: relative; width: 100%; height: 60px; margin-top: 20px; }
         .bot-black { position: absolute; left: 45%; bottom: 0; width: 55%; height: 30px; background: #231f20; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); z-index: 2; }
         .bot-lime { position: absolute; left: 52%; bottom: 10px; width: 48%; height: 35px; background: #8ce100; clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
-        
-        /* ✨ Modal အကျယ်ကို Zoom ဆွဲလို့ရအောင် ပြင်ထားပါတယ်ရှင် */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 3000; overflow: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 3000; overflow: auto; padding: 20px; }
         .modal-content-wrapper { display: flex; justify-content: center; align-items: flex-start; min-width: fit-content; }
         .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; left: 20px; z-index: 3100; }
       `}</style>
@@ -95,7 +94,7 @@ const App = () => {
         </div>
         <button onClick={() => { localStorage.removeItem("isLoggedIn"); setIsLoggedIn(false); }} style={styles.logoutBtn}>LOGOUT</button>
       </div>
-      <div style={{ marginTop: '70px' }}>
+        <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
           <div style={styles.scrollWrapper}>
             <div style={styles.invoiceOuter}>
@@ -202,13 +201,13 @@ const App = () => {
 };
 
 const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
-  <div style={{...styles.a4Sheet, margin: '20px auto'}}>
+  <div style={{...styles.a4Sheet, margin: '20px auto', minWidth: '210mm'}}>
     <div style={styles.header}>
       <div style={styles.headerLeft}>
         <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
         <div style={styles.bizInfo}>
           <div style={{display:'flex', alignItems:'baseline'}}>
-            <span style={{fontSize:'20px', fontWeight:'bold'}}>Ko Htay Aung</span>
+            <span style={{fontSize:'30px', fontWeight:'bold'}}>Ko Htay Aung</span>
             <h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1>
           </div>
           <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Repair, Sales and Services</p>
@@ -288,7 +287,7 @@ const styles = {
   logoutBtn: { position:'absolute', right:'10px', background:'#dc2626', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontWeight:'bold', fontSize:'11px' },
   scrollWrapper: { padding: '10px 0' },
   invoiceOuter: { width: 'fit-content', margin: '0 auto' },
-  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 10mm 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 10mm 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '15px', alignItems: 'center', flex: 1 },
   headerRight: { textAlign: 'right', width: '320px' },
@@ -321,3 +320,4 @@ const styles = {
 };
 
 export default App;
+                                  

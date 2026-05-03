@@ -16,7 +16,6 @@ const App = () => {
   const [discount, setDiscount] = useState("");
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: "", price: "" })));
 
-  // ✨ Zoom in/out အလုပ်လုပ်စေရန် Viewport ကို သေချာအောင် Control လုပ်ပေးခြင်း
   useEffect(() => {
     let meta = document.querySelector('meta[name="viewport"]');
     if (!meta) {
@@ -85,7 +84,7 @@ const App = () => {
         scale: 3, 
         useCORS: true, 
         backgroundColor: "#ffffff",
-        windowWidth: 794 // ✨ A4 width အတိအကျ သတ်မှတ်ထားသဖြင့် Layout ဘောင်မကျော်ပါ
+        windowWidth: 794
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       const link = document.createElement('a');
@@ -124,7 +123,6 @@ const App = () => {
         {activeTab === 'invoice' ? (
           <div className="invoice-scroll-area">
             <div ref={invoiceRef} style={styles.a4Sheet}>
-              {/* Header */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
                   <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
@@ -142,7 +140,6 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table ✨ Colgroup ဖြင့် အချိုးကျခွဲထား၍ လုံးဝ ဘောင်မကျော်ပါ */}
               <table className="excel-table">
                 <colgroup>
                   <col style={{width: '6%'}} />
@@ -181,7 +178,6 @@ const App = () => {
                 </tbody>
               </table>
 
-              {/* Footer Alignment ✨ Table ရဲ့ အကျယ်အတိုင်း ညာဘက်အစွန်းညီအောင် ညှိထားပါသည် */}
               <div style={styles.footerFlex}>
                 <div style={styles.customerArea}>
                   <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -217,12 +213,16 @@ const App = () => {
         )}
       </div>
 
-      {/* ✨ History Modal အစစ်အမှန် အဖြစ် ပြင်ဆင်ထားပါသည် */}
+      {/* ✨ Modal အပိုင်းကို ဘယ်ညာ အစွန်းမပြတ်အောင်နဲ့ Zoom ဆွဲလို့ရအောင် သေချာပြင်ထားပါတယ် */}
       {selectedInvoice && (
         <div style={styles.modalOverlay} onClick={() => setSelectedInvoice(null)}>
-          <button style={styles.closeModalBtn} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
-          <div onClick={e => e.stopPropagation()} style={{boxShadow: '0 0 30px rgba(0,0,0,0.5)', background: 'white'}}>
-            <InvoiceReadOnly data={selectedInvoice} styles={styles} OasisLogo={OasisLogo} />
+          <div style={{ display: 'inline-block', textAlign: 'left', minWidth: '794px' }}>
+            <div style={{ textAlign: 'center' }}>
+              <button style={styles.closeModalBtn} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
+            </div>
+            <div onClick={e => e.stopPropagation()} style={{boxShadow: '0 0 30px rgba(0,0,0,0.5)', background: 'white'}}>
+              <InvoiceReadOnly data={selectedInvoice} styles={styles} OasisLogo={OasisLogo} />
+            </div>
           </div>
         </div>
       )}
@@ -321,9 +321,11 @@ const styles = {
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', WebkitOverflowScrolling: 'touch' },
-  closeModalBtn: { marginBottom: '20px', padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }
+  
+  // ✨ Modal စတိုင်ကို လုံးဝ ဘယ်ညာဆွဲလို့ရအောင်နဲ့ Zoom ကိုပါ Control လုပ်နိုင်အောင် ပြင်ထားပါတယ်
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflow: 'auto', textAlign: 'center', padding: '40px 20px', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y pinch-zoom' },
+  closeModalBtn: { marginBottom: '20px', padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }
 };
 
 export default App;
-          
+                                                                 

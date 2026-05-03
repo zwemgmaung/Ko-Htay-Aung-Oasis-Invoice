@@ -87,12 +87,24 @@ const App = () => {
         windowWidth: 794
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
-      const link = document.createElement('a');
-      link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      
+      // ✨ ဖုန်း App တွေမှာပါ Download လုပ်လို့ရအောင် Blob format ပြောင်းပြီး ဆွဲခိုင်းထားပါတယ် ကိုကို
+      fetch(dataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.style.display = 'none';
+          link.href = url;
+          link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+        });
+        
       alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
   };
@@ -108,8 +120,6 @@ const App = () => {
         .th-lime { background-color: #8ce100; color: #fff; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
-        
-        /* ✨ JPEG ထဲမှာ စာသားတွေ အလယ်တည့်တည့်ဖြစ်အောင် line-height ကို အသေချထားပါတယ်ရှင် */
         .cell-input { width: 100%; height: 33px; line-height: 33px; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; font-weight: bold; margin: 0; padding: 0; }
         .cell-input-desc { width: 100%; height: 33px; line-height: 33px; border: none; text-align: left; padding-left: 10px; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; margin: 0; padding-top: 0; padding-bottom: 0; }
       `}</style>
@@ -215,10 +225,11 @@ const App = () => {
         )}
       </div>
 
+      {/* ✨ History ကို ဘယ်/ညာ အပြည့်အဝ ဆွဲကြည့်လို့ရအောင်နဲ့ margin ညှိထားပါတယ် */}
       {selectedInvoice && (
         <div style={styles.modalOverlay} onClick={() => setSelectedInvoice(null)}>
-          <div style={{ display: 'inline-block', textAlign: 'left', minWidth: '794px' }}>
-            <div style={{ textAlign: 'center' }}>
+          <div style={styles.modalContentWrapper}>
+            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
               <button style={styles.closeModalBtn} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
             </div>
             <div onClick={e => e.stopPropagation()} style={{boxShadow: '0 0 30px rgba(0,0,0,0.5)', background: 'white'}}>
@@ -307,7 +318,6 @@ const styles = {
   customerArea: { flex: 1, paddingTop: '10px' },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px' },
   fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
-  /* ✨ JPEG ထဲမှာ စာသားတွေ မျဉ်းကြောင်းပေါ် တိတိကျကျတင်နေအောင် ပြင်ထားပါတယ် */
   footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '30px', fontSize: '13px', outline:'none', background: 'transparent', padding: '0 0 2px 0', margin: 0, lineHeight: '18px' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000', fontWeight:'bold' },
@@ -323,8 +333,11 @@ const styles = {
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflowY: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 20px', WebkitOverflowScrolling: 'touch' },
-  closeModalBtn: { marginBottom: '20px', padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', flexShrink: 0 }
+  
+  /* ✨ Modal ရဲ့ CSS အသစ် (ဘယ်ညာ အစွန်းမပြတ်အောင် ပြင်ဆင်ထားသည်) */
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflow: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y pinch-zoom', display: 'block' },
+  modalContentWrapper: { width: 'fit-content', margin: '0 auto', padding: '40px 20px', display: 'flex', flexDirection: 'column' },
+  closeModalBtn: { padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-block' }
 };
 
 export default App;

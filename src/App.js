@@ -16,7 +16,6 @@ const App = () => {
   const [discount, setDiscount] = useState("");
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: "", price: "" })));
 
-  // ✨ လက်နဲ့ ချုံ့ချဲ့လို့ရအောင် meta tag ကို အတင်းထည့်ပေးတဲ့ logic ပါ ကိုကို
   useEffect(() => {
     const meta = document.querySelector('meta[name="viewport"]');
     if (meta) {
@@ -80,15 +79,16 @@ const App = () => {
         scale: 3, 
         useCORS: true, 
         backgroundColor: "#ffffff",
-        windowWidth: 850 // ✨ JPEG ထွက်ရင် ဘောင်မကျော်အောင် width ကို ကန့်သတ်ထားပါတယ်
+        windowWidth: 850
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
       link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
-      alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
-    } catch (e) { alert("Error: " + e.message); }
+      document.body.removeChild(link);
+    } catch (e) { console.error(e); }
   };
 
   if (!isLoggedIn) return <LoginSection onLogin={() => { localStorage.setItem("isLoggedIn", "true"); setIsLoggedIn(true); }} />;
@@ -115,7 +115,6 @@ const App = () => {
         {activeTab === 'invoice' ? (
           <div className="invoice-scroll-area">
             <div ref={invoiceRef} style={styles.a4Sheet}>
-              {/* Header */}
               <div style={styles.header}>
                 <div style={styles.headerLeft}>
                   <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
@@ -133,7 +132,6 @@ const App = () => {
                 </div>
               </div>
 
-              {/* Table - Width 750px strictly */}
               <table className="excel-table">
                 <thead>
                   <tr>
@@ -161,7 +159,6 @@ const App = () => {
                 </tbody>
               </table>
 
-              {/* Footer Aligned to Table */}
               <div style={styles.footerFlex}>
                 <div style={styles.customerArea}>
                   <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
@@ -169,9 +166,9 @@ const App = () => {
                   <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                 </div>
                 <div style={styles.summaryArea}>
-                  <div style={{...styles.sRow, background:'#8ce100'}}>Total Amount <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
-                  <div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
-                  <div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
+                  <div style={{...styles.sRow, background:'#8ce100', borderBottom:'1.5px solid #000'}}>Total Amount <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
+                  <div style={{...styles.sRow, background:'#231f20', color:'#fff', borderBottom:'1.5px solid #000'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                  <div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold'}}>Balance <span>{balance.toLocaleString()}</span></div>
                 </div>
               </div>
 
@@ -195,7 +192,6 @@ const App = () => {
           </div>
         )}
       </div>
-      {/* Modal and Login Section same as before */}
     </div>
   );
 };
@@ -214,7 +210,7 @@ const styles = {
   logoImage: { width: '85px', height: '85px', objectFit: 'cover' },
   headerSmallText: { fontSize: '11px', margin: '2px 0', color: '#555', fontWeight:'bold' },
   topLimeBox: { background:'#8ce100', color:'white', padding:'8px', fontSize:'20px', fontWeight:'bold', textAlign:'center', marginBottom:'10px' },
-  invNoBox: { background:'#231f20', color:'white', padding:'5px', fontSize:'12px', display:'inline-block' },
+  invNoBox: { background:'#231f20', color: 'white', padding: '5px 12px', fontSize:'12px', fontWeight:'bold', marginTop:'8px', display: 'inline-block' },
   dateBox: { fontSize:'11px', marginTop:'5px' },
   cellInput: { width: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '13px' },
   cellInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
@@ -222,9 +218,9 @@ const styles = {
   customerArea: { flex: 1, paddingTop: '10px' },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px' },
   fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
-  footerIn: { border:'none', borderBottom:'1px solid #8ce100', flex: 1, marginRight: '20px', fontSize: '13px', outline:'none' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '20px', fontSize: '13px', outline:'none' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'13px' },
   signatureArea: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
@@ -233,7 +229,10 @@ const styles = {
   botLime: { position: 'absolute', bottom: '15px', right: 0, width: '350px', height: '25px', background: '#8ce100', clip-path: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' },
   botBlack: { position: 'absolute', bottom: 0, right: 0, width: '400px', height: '25px', background: '#231f20', clip-path: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' },
   btnCenter: { textAlign:'center', padding: '30px' },
-  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold' }
+  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold' },
+  dashboardArea: { padding: '40px' },
+  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
+  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
 };
 
 const LoginSection = ({ onLogin }) => {
@@ -248,7 +247,7 @@ const LoginSection = ({ onLogin }) => {
         <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setUser(e.target.value)} />
         <div style={{position:'relative', marginBottom:'20px'}}>
           <input type={showPass ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setPass(e.target.value)} />
-          <span style={{position:'absolute', right:'10px', top:'12px', cursor:'pointer'}} onClick={()=>setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span>
+          <span style={{position:'absolute', right:'10px', top:'12px', cursor:'pointer'}} onClick={()=>setShowPass(!showPass)}>{showPass ? "O" : "X"}</span>
         </div>
         <button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{width:'100%', padding:'12px', background:'#8ce100', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold'}}>Login</button>
       </div>
@@ -257,3 +256,4 @@ const LoginSection = ({ onLogin }) => {
 };
 
 export default App;
+                

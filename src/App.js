@@ -192,6 +192,52 @@ const App = () => {
           </div>
         )}
       </div>
+
+      {selectedInvoice && (
+        <div className="modal-overlay" onClick={() => setSelectedInvoice(null)}>
+          <button className="close-modal-btn" onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
+          <div className="modal-content-wrapper"><div onClick={e => e.stopPropagation()}><InvoiceReadOnly data={selectedInvoice} styles={styles} OasisLogo={OasisLogo} /></div></div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
+  <div style={styles.a4Sheet}>
+    <div style={styles.header}>
+      <div style={styles.headerLeft}><img src={OasisLogo} alt="Logo" style={styles.logoImage} /><div style={styles.bizInfo}><div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div><p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Repair, Sales and Services</p><p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p><p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p></div></div>
+      <div style={styles.headerRight}><div style={styles.topLimeBox}>INVOICE</div><div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div><div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div></div>
+    </div>
+    <table className="excel-table">
+      <thead><tr><th className="th-black" style={{width:'40px'}}>No.</th><th className="th-lime" style={{width:'320px'}}>Description</th><th className="th-black" style={{width:'70px'}}>Unit</th><th className="th-lime" style={{width:'70px'}}>Qty</th><th className="th-black" style={{width:'100px'}}>Price</th><th className="th-lime" style={{width:'150px'}}>Total</th></tr></thead>
+      <tbody>{data.rows.map((row, i) => {
+          const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
+          return (<tr key={i}><td style={{textAlign:'center', fontSize:'13px'}}>{i+1}</td><td style={{padding:'0 10px', fontSize:'12px'}}>{row.desc}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.unit}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.qty}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.price}</td><td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td></tr>)
+        })}</tbody>
+    </table>
+    <div style={styles.footerFlex}><div style={styles.customerArea}><p style={{fontSize:'14px'}}><strong>Name :</strong> {data.customer.name}</p><p style={{fontSize:'14px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p></div><div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100'}}>Total <span>{data.totalAmount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Disc <span>{data.discount}</span></div><div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div></div>
+    <div style={styles.signatureArea}><div style={styles.sigBox}><div style={{color:'#1e40af', fontSize:'22px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div><div style={styles.sigLine}></div><div style={{fontSize:'14px', fontWeight:'bold', marginTop:'8px'}}>Zwe Htet Naing</div><div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div></div></div>
+    <div style={styles.bottomGraphic}><div style={styles.botLime}></div><div style={styles.botBlack}></div></div>
+  </div>
+);
+
+const LoginSection = ({ onLogin }) => {
+  const [user, setUser] = useState("");
+  const [pass, setPass] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  return (
+    <div style={{height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4'}}>
+      <div style={{background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width:'350px', boxShadow:'0 10px 25px rgba(0,0,0,0.1)'}}>
+        <img src={OasisLogo} style={{width:'90px', borderRadius:'50%', marginBottom:'15px'}} alt="logo" />
+        <h2 style={{marginBottom:'20px'}}>Ko Htay Aung ( OASIS )</h2>
+        <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setUser(e.target.value)} />
+        <div style={{position:'relative', marginBottom:'20px'}}>
+          <input type={showPass ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setPass(e.target.value)} />
+          <span style={{position:'absolute', right:'10px', top:'12px', cursor:'pointer'}} onClick={()=>setShowPass(!showPass)}>{showPass ? "O" : "X"}</span>
+        </div>
+        <button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{width:'100%', padding:'12px', background:'#8ce100', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold'}}>Login</button>
+      </div>
     </div>
   );
 };
@@ -220,40 +266,16 @@ const styles = {
   fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
   footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '20px', fontSize: '13px', outline:'none' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'13px' },
   signatureArea: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   sigLine: { borderTop: '2px solid #000', width: '100%' },
   bottomGraphic: { marginTop: 'auto', position: 'relative', height: '60px', width: '750px' },
-  botLime: { position: 'absolute', bottom: '15px', right: 0, width: '350px', height: '25px', background: '#8ce100', clip-path: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' },
-  botBlack: { position: 'absolute', bottom: 0, right: 0, width: '400px', height: '25px', background: '#231f20', clip-path: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' },
+  botLime: { position: 'absolute', bottom: '15px', right: 0, width: '350px', height: '25px', background: '#8ce100', clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' },
+  botBlack: { position: 'absolute', bottom: 0, right: 0, width: '400px', height: '25px', background: '#231f20', clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' },
   btnCenter: { textAlign:'center', padding: '30px' },
-  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold' },
-  dashboardArea: { padding: '40px' },
-  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
-  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
-};
-
-const LoginSection = ({ onLogin }) => {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  return (
-    <div style={{height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4'}}>
-      <div style={{background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width:'350px', boxShadow:'0 10px 25px rgba(0,0,0,0.1)'}}>
-        <img src={OasisLogo} style={{width:'90px', borderRadius:'50%', marginBottom:'15px'}} alt="logo" />
-        <h2 style={{marginBottom:'20px'}}>Ko Htay Aung ( OASIS )</h2>
-        <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setUser(e.target.value)} />
-        <div style={{position:'relative', marginBottom:'20px'}}>
-          <input type={showPass ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setPass(e.target.value)} />
-          <span style={{position:'absolute', right:'10px', top:'12px', cursor:'pointer'}} onClick={()=>setShowPass(!showPass)}>{showPass ? "O" : "X"}</span>
-        </div>
-        <button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{width:'100%', padding:'12px', background:'#8ce100', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold'}}>Login</button>
-      </div>
-    </div>
-  );
+  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold' }
 };
 
 export default App;
-                

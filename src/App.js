@@ -18,9 +18,7 @@ const App = () => {
 
   useEffect(() => {
     const meta = document.querySelector('meta[name="viewport"]');
-    if (meta) {
-      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=yes');
-    }
+    if (meta) meta.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=yes');
   }, []);
 
   useEffect(() => {
@@ -40,54 +38,39 @@ const App = () => {
 
   const formatComma = (val) => {
     if (!val) return "";
-    const stringVal = String(val);
-    if (stringVal.includes('%')) return stringVal;
-    const num = stringVal.replace(/,/g, "");
-    return isNaN(num) ? "" : Number(num).toLocaleString();
+    const s = String(val);
+    if (s.includes('%')) return s;
+    const n = s.replace(/,/g, "");
+    return isNaN(n) ? "" : Number(n).toLocaleString();
   };
 
-  const updateRow = (index, field, value) => {
-    const newRows = [...rows];
-    newRows[index][field] = (field === "price") ? formatComma(value) : value;
-    setRows(newRows);
+  const updateRow = (i, f, v) => {
+    const nr = [...rows];
+    nr[i][f] = (f === "price") ? formatComma(v) : v;
+    setRows(nr);
   };
 
-  const calculateTotal = (qty, price) => {
-    const q = parseFloat(qty) || 0;
-    const p = parseFloat(String(price).replace(/,/g, '')) || 0;
-    return q * p;
-  };
-
-  const totalAmount = rows.reduce((sum, row) => sum + calculateTotal(row.qty, row.price), 0);
-  const getDiscountValue = () => {
+  const calculateTotal = (q, p) => (parseFloat(q) || 0) * (parseFloat(String(p).replace(/,/g, '')) || 0);
+  const totalAmount = rows.reduce((s, r) => s + calculateTotal(r.qty, r.price), 0);
+  
+  const getDiscValue = () => {
     if (!discount) return 0;
-    const cleanDisc = String(discount).replace(/,/g, '');
-    if (cleanDisc.includes('%')) {
-      const percent = parseFloat(cleanDisc.replace('%', '')) || 0;
-      return (totalAmount * percent) / 100;
-    }
-    return parseFloat(cleanDisc) || 0;
+    const c = String(discount).replace(/,/g, '');
+    if (c.includes('%')) return (totalAmount * (parseFloat(c.replace('%', '')) || 0)) / 100;
+    return parseFloat(c) || 0;
   };
-  const discountValue = getDiscountValue();
-  const balance = totalAmount - discountValue;
+  const balance = totalAmount - getDiscValue();
 
   const handleSaveAndCapture = async () => {
     if (!invoiceRef.current) return;
     try {
       await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
-      const canvas = await html2canvas(invoiceRef.current, { 
-        scale: 3, 
-        useCORS: true, 
-        backgroundColor: "#ffffff",
-        windowWidth: 850
-      });
-      const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+      const canvas = await html2canvas(invoiceRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
+      link.href = canvas.toDataURL('image/jpeg', 1.0);
       link.click();
-      document.body.removeChild(link);
+      alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { console.error(e); }
   };
 
@@ -96,12 +79,12 @@ const App = () => {
   return (
     <div style={styles.appContainer}>
       <style>{`
-        .excel-table { width: 750px; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; margin: 0; }
+        .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
         .excel-table td { border: 1.5px solid #000; padding: 0; height: 35px; vertical-align: middle; }
         .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 8px; font-size: 13px; font-weight: bold; text-align: center; }
         .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 8px; font-size: 13px; text-align: center; }
         .cell-container { display: flex; align-items: center; height: 100%; width: 100%; overflow: hidden; }
-        .invoice-scroll-area { width: 100%; overflow-x: auto; padding: 20px 10px; background: #f4f7f6; }
+        .invoice-scroll-area { width: 100%; overflow-x: auto; padding: 20px 10px; box-sizing: border-box; }
       `}</style>
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
@@ -134,28 +117,22 @@ const App = () => {
 
               <table className="excel-table">
                 <thead>
-                  <tr>
-                    <th className="th-black" style={{width: '40px'}}>No.</th>
-                    <th className="th-lime" style={{width: '320px'}}>Item description</th>
-                    <th className="th-black" style={{width: '70px'}}>Unit</th>
-                    <th className="th-lime" style={{width: '70px'}}>Qty</th>
-                    <th className="th-black" style={{width: '100px'}}>Price</th>
-                    <th className="th-lime" style={{width: '150px'}}>Total Price</th>
-                  </tr>
+                  <tr><th style={{width:'40px'}} className="th-black">No.</th><th style={{width:'320px'}} className="th-lime">Item description</th><th style={{width:'70px'}} className="th-black">Unit</th><th style={{width:'70px'}} className="th-lime">Qty</th><th style={{width:'100px'}} className="th-black">Price</th><th style={{width:'150px'}} className="th-lime">Total Price</th></tr>
                 </thead>
                 <tbody>
-                  {rows.map((row, i) => (
-                    <tr key={i}>
-                      <td style={{textAlign:'center', fontSize:'13px'}}>{i+1}</td>
-                      <td><div className="cell-container"><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></div></td>
-                      <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></div></td>
-                      <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></div></td>
-                      <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></div></td>
-                      <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>
-                        <div className="cell-container" style={{justifyContent:'flex-end'}}>{calculateTotal(row.qty, row.price) > 0 ? calculateTotal(row.qty, row.price).toLocaleString() : ""}</div>
-                      </td>
-                    </tr>
-                  ))}
+                  {rows.map((r, i) => {
+                    const rt = calculateTotal(r.qty, r.price);
+                    return (
+                      <tr key={i}>
+                        <td style={{textAlign:'center', fontSize:'13px'}}>{i+1}</td>
+                        <td><div className="cell-container"><input style={styles.cellInput} value={r.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></div></td>
+                        <td><div className="cell-container"><input style={styles.cellInputCenter} value={r.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></div></td>
+                        <td><div className="cell-container"><input style={styles.cellInputCenter} value={r.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></div></td>
+                        <td><div className="cell-container"><input style={styles.cellInputCenter} value={r.price} onChange={e=>updateRow(i, "price", e.target.value)} /></div></td>
+                        <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}><div className="cell-container" style={{justifyContent:'flex-end'}}>{rt > 0 ? rt.toLocaleString() : ""}</div></td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
@@ -166,19 +143,14 @@ const App = () => {
                   <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
                 </div>
                 <div style={styles.summaryArea}>
-                  <div style={{...styles.sRow, background:'#8ce100', borderBottom:'1.5px solid #000'}}>Total Amount <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
-                  <div style={{...styles.sRow, background:'#231f20', color:'#fff', borderBottom:'1.5px solid #000'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
-                  <div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold'}}>Balance <span>{balance.toLocaleString()}</span></div>
+                  <div style={{...styles.sRow, background:'#8ce100'}}>Total Amount <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
+                  <div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                  <div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
                 </div>
               </div>
 
               <div style={styles.signatureArea}>
-                <div style={styles.sigBox}>
-                  <div style={{color:'#1e40af', fontSize:'22px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
-                  <div style={styles.sigLine}></div>
-                  <div style={{fontSize:'14px', fontWeight:'bold', marginTop: '8px'}}>Zwe Htet Naing</div>
-                  <div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div>
-                </div>
+                <div style={styles.sigBox}><div style={{color:'#1e40af', fontSize:'22px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div><div style={styles.sigLine}></div><div style={{fontSize:'14px', fontWeight:'bold', marginTop: '8px'}}>Zwe Htet Naing</div><div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div></div>
               </div>
               <p style={{fontSize:'13px', fontWeight:'bold', marginTop:'15px'}}>Thanks for your business!</p>
               <div style={styles.bottomGraphic}><div style={styles.botLime}></div><div style={styles.botBlack}></div></div>
@@ -206,14 +178,14 @@ const App = () => {
 const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
   <div style={styles.a4Sheet}>
     <div style={styles.header}>
-      <div style={styles.headerLeft}><img src={OasisLogo} alt="Logo" style={styles.logoImage} /><div style={styles.bizInfo}><div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div><p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Repair, Sales and Services</p><p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p><p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p></div></div>
+      <div style={styles.headerLeft}><img src={OasisLogo} alt="Logo" style={styles.logoImage} /><div style={styles.bizInfo}><div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div><p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Repair, Sales and Services</p><p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p><p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p></div></div>
       <div style={styles.headerRight}><div style={styles.topLimeBox}>INVOICE</div><div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div><div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div></div>
     </div>
     <table className="excel-table">
-      <thead><tr><th className="th-black" style={{width:'40px'}}>No.</th><th className="th-lime" style={{width:'320px'}}>Description</th><th className="th-black" style={{width:'70px'}}>Unit</th><th className="th-lime" style={{width:'70px'}}>Qty</th><th className="th-black" style={{width:'100px'}}>Price</th><th className="th-lime" style={{width:'150px'}}>Total</th></tr></thead>
-      <tbody>{data.rows.map((row, i) => {
-          const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
-          return (<tr key={i}><td style={{textAlign:'center', fontSize:'13px'}}>{i+1}</td><td style={{padding:'0 10px', fontSize:'12px'}}>{row.desc}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.unit}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.qty}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.price}</td><td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td></tr>)
+      <thead><tr><th style={{width:'40px'}} className="th-black">No.</th><th style={{width:'320px'}} className="th-lime">Description</th><th style={{width:'70px'}} className="th-black">Unit</th><th style={{width:'70px'}} className="th-lime">Qty</th><th style={{width:'100px'}} className="th-black">Price</th><th style={{width:'150px'}} className="th-lime">Total</th></tr></thead>
+      <tbody>{data.rows.map((r, i) => {
+          const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
+          return (<tr key={i}><td style={{textAlign:'center', fontSize:'13px'}}>{i+1}</td><td style={{padding:'0 10px', fontSize:'12px'}}>{r.desc}</td><td style={{textAlign:'center', fontSize:'12px'}}>{r.unit}</td><td style={{textAlign:'center', fontSize:'12px'}}>{r.qty}</td><td style={{textAlign:'center', fontSize:'12px'}}>{r.price}</td><td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>{rt > 0 ? rt.toLocaleString() : ""}</td></tr>)
         })}</tbody>
     </table>
     <div style={styles.footerFlex}><div style={styles.customerArea}><p style={{fontSize:'14px'}}><strong>Name :</strong> {data.customer.name}</p><p style={{fontSize:'14px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p></div><div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100'}}>Total <span>{data.totalAmount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Disc <span>{data.discount}</span></div><div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div></div>
@@ -223,20 +195,20 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
 );
 
 const LoginSection = ({ onLogin }) => {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
-  const [showPass, setShowPass] = useState(false);
+  const [u, setU] = useState("");
+  const [p, setP] = useState("");
+  const [s, setS] = useState(false);
   return (
     <div style={{height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4'}}>
       <div style={{background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width:'350px', boxShadow:'0 10px 25px rgba(0,0,0,0.1)'}}>
         <img src={OasisLogo} style={{width:'90px', borderRadius:'50%', marginBottom:'15px'}} alt="logo" />
         <h2 style={{marginBottom:'20px'}}>Ko Htay Aung ( OASIS )</h2>
-        <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setUser(e.target.value)} />
+        <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setU(e.target.value)} />
         <div style={{position:'relative', marginBottom:'20px'}}>
-          <input type={showPass ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setPass(e.target.value)} />
-          <span style={{position:'absolute', right:'10px', top:'12px', cursor:'pointer'}} onClick={()=>setShowPass(!showPass)}>{showPass ? "O" : "X"}</span>
+          <input type={s ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setP(e.target.value)} />
+          <span style={{position:'absolute', right:'12px', top:'12px', cursor:'pointer'}} onClick={()=>setS(!s)}>{s ? "👁️" : "🙈"}</span>
         </div>
-        <button onClick={()=>{if(user==="Oasis" && pass==="ZweHNaing@2026") onLogin()}} style={{width:'100%', padding:'12px', background:'#8ce100', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold'}}>Login</button>
+        <button onClick={()=>{if(u==="Oasis" && p==="ZweHNaing@2026") onLogin()}} style={{width:'100%', padding:'12px', background:'#8ce100', color:'white', border:'none', borderRadius:'8px', fontWeight:'bold'}}>Login</button>
       </div>
     </div>
   );
@@ -256,15 +228,15 @@ const styles = {
   logoImage: { width: '85px', height: '85px', objectFit: 'cover' },
   headerSmallText: { fontSize: '11px', margin: '2px 0', color: '#555', fontWeight:'bold' },
   topLimeBox: { background:'#8ce100', color:'white', padding:'8px', fontSize:'20px', fontWeight:'bold', textAlign:'center', marginBottom:'10px' },
-  invNoBox: { background:'#231f20', color: 'white', padding: '5px 12px', fontSize:'12px', fontWeight:'bold', marginTop:'8px', display: 'inline-block' },
+  invNoBox: { background:'#231f20', color: 'white', padding: '5px 12px', fontSize:'12px', fontWeight:'bold', display: 'inline-block' },
   dateBox: { fontSize:'11px', marginTop:'5px' },
-  cellInput: { width: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '13px' },
-  cellInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
+  cellInput: { width: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '13px', background: 'transparent' },
+  cellInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px', background: 'transparent' },
   footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '20px' },
   customerArea: { flex: 1, paddingTop: '10px' },
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px' },
   fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '20px', fontSize: '13px', outline:'none' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '20px', fontSize: '13px', outline:'none', background: 'transparent' },
   summaryArea: { width: '260px', border: '1.5px solid #000' },
   sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'13px' },
@@ -275,7 +247,11 @@ const styles = {
   botLime: { position: 'absolute', bottom: '15px', right: 0, width: '350px', height: '25px', background: '#8ce100', clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' },
   botBlack: { position: 'absolute', bottom: 0, right: 0, width: '400px', height: '25px', background: '#231f20', clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' },
   btnCenter: { textAlign:'center', padding: '30px' },
-  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold' }
+  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold', cursor:'pointer' },
+  dashboardArea: { padding: '40px' },
+  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
+  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
 };
 
 export default App;
+          

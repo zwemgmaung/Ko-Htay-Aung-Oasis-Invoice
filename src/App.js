@@ -34,7 +34,7 @@ const App = () => {
   const formatComma = (val) => {
     if (!val) return "";
     const num = val.toString().replace(/,/g, "");
-    if (val.toString().includes('%')) return val; // % ပါရင် comma မထည့်ပါ
+    if (val.toString().includes('%')) return val;
     return isNaN(num) ? "" : Number(num).toLocaleString();
   };
 
@@ -52,7 +52,6 @@ const App = () => {
 
   const totalAmount = rows.reduce((sum, row) => sum + calculateTotal(row.qty, row.price), 0);
 
-  // ✨ Discount % Logic ပြင်ဆင်ထားပါတယ် ကိုကို
   const getDiscountValue = () => {
     if (!discount) return 0;
     const cleanDisc = String(discount).replace(/,/g, '');
@@ -70,10 +69,16 @@ const App = () => {
     if (!invoiceRef.current) return;
     try {
       await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
-      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(invoiceRef.current, { 
+        scale: 3, 
+        useCORS: true, 
+        backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: -window.scrollY
+      });
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 0.9);
+      link.href = canvas.toDataURL('image/jpeg', 1.0);
       link.click();
       alert("သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
@@ -85,21 +90,22 @@ const App = () => {
     <div style={styles.appContainer}>
       <style>{`
         .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; }
-        .excel-table td { border: 1.5px solid #000; padding: 0; height: 32px; }
-        .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 8px; font-size: 12px; font-weight: bold; }
-        .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 8px; font-size: 12px; }
-        .top-design-container { position: relative; width: 280px; height: 60px; }
-        .top-black-shape { position: absolute; right: 0; top: 12px; width: 240px; height: 40px; background: #231f20; clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
-        .top-lime-shape { position: absolute; right: 60px; top: 0; width: 190px; height: 36px; background: #8ce100; clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); z-index: 2; display: flex; align-items: center; justify-content: center; }
-        .invoice-text { color: white; font-size: 18px; font-weight: bold; letter-spacing: 1px; }
-        .footer-graphic { position: relative; width: 100%; height: 50px; margin-top: 15px; }
-        .bot-black { position: absolute; left: 45%; bottom: 0; width: 55%; height: 25px; background: #231f20; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); z-index: 2; }
-        .bot-lime { position: absolute; left: 52%; bottom: 8px; width: 48%; height: 28px; background: #8ce100; clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
+        .excel-table td { border: 1.5px solid #000; padding: 0; height: 35px; vertical-align: middle; }
+        .cell-container { display: flex; align-items: center; height: 100%; width: 100%; }
+        .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; font-weight: bold; }
+        .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 10px; font-size: 13px; }
+        .top-design-container { position: relative; width: 320px; height: 80px; }
+        .top-black-shape { position: absolute; right: 0; top: 15px; width: 280px; height: 50px; background: #231f20; clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
+        .top-lime-shape { position: absolute; right: 80px; top: 0; width: 220px; height: 45px; background: #8ce100; clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%); z-index: 2; display: flex; align-items: center; justify-content: center; }
+        .invoice-text { color: white; font-size: 24px; font-weight: bold; letter-spacing: 2px; }
+        .footer-graphic { position: relative; width: 100%; height: 60px; margin-top: 20px; }
+        .bot-black { position: absolute; left: 45%; bottom: 0; width: 55%; height: 30px; background: #231f20; clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%); z-index: 2; }
+        .bot-lime { position: absolute; left: 52%; bottom: 10px; width: 48%; height: 35px; background: #8ce100; clip-path: polygon(8% 0, 100% 0, 100% 100%, 0 100%); z-index: 1; }
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 3000; overflow: auto; padding: 20px; }
         .modal-content-wrapper { display: flex; justify-content: center; align-items: flex-start; min-width: fit-content; }
-        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; left: 20px; z-index: 3100; }
+        .close-modal-btn { background: #dc2626; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; position: sticky; left: 20px; z-index: 3100; }
       `}</style>
-        <div className="no-print" style={styles.navBar}>
+      <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
           <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.navBtnActive : styles.navBtn}>HISTORY</button>
@@ -116,9 +122,9 @@ const App = () => {
                   <div style={styles.headerLeft}>
                     <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                     <div style={styles.bizInfo}>
-                      <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
-                      <p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
-                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar, Yangon</p>
+                      <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'30px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1></div>
+                      <p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
+                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
                       <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                     </div>
                   </div>
@@ -131,19 +137,21 @@ const App = () => {
 
                 <table className="excel-table">
                   <thead>
-                    <tr><th className="th-black" style={{width: '40px'}}>No.</th><th className="th-lime">Item description</th><th className="th-black" style={{width: '60px'}}>Unit</th><th className="th-lime" style={{width: '50px'}}>Qty</th><th className="th-black" style={{width: '90px'}}>Price</th><th className="th-lime" style={{width: '110px'}}>Total Price</th></tr>
+                    <tr><th className="th-black" style={{width: '45px'}}>No.</th><th className="th-lime">Item description</th><th className="th-black" style={{width: '70px'}}>Unit</th><th className="th-lime" style={{width: '60px'}}>Qty</th><th className="th-black" style={{width: '100px'}}>Price</th><th className="th-lime" style={{width: '125px'}}>Total Price</th></tr>
                   </thead>
                   <tbody>
                     {rows.map((row, i) => {
                       const rowTotal = calculateTotal(row.qty, row.price);
                       return (
                         <tr key={i}>
-                          <td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td>
-                          <td><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                          <td><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                          <td><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                          <td><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                          <td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px', fontWeight:'bold'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td>
+                          <td style={{textAlign:'center', fontSize:'13px', fontWeight:'bold'}}>{i+1}</td>
+                          <td><div className="cell-container"><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></div></td>
+                          <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></div></td>
+                          <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></div></td>
+                          <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></div></td>
+                          <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>
+                            <div className="cell-container" style={{justifyContent:'flex-end'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</div>
+                          </td>
                         </tr>
                       );
                     })}
@@ -158,20 +166,20 @@ const App = () => {
                   </div>
                   <div style={styles.summaryArea}>
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight: 'bold'}}>Total Amount <span>{totalAmount.toLocaleString()}</span></div>
-                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight: 'bold'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} placeholder="0 or 10%" onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                    <div style={{...styles.sRow, background:'#231f20', color:'#fff', fontWeight: 'bold'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
                     <div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
                   </div>
                 </div>
 
                 <div style={styles.signatureArea}>
                   <div style={styles.sigBox}>
-                    <div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
+                    <div style={{color:'#1e40af', fontSize:'24px', fontFamily:'cursive', marginBottom:'15px'}}>Zwe</div>
                     <div style={styles.sigLine}></div>
-                    <div style={{fontSize:'12px', fontWeight:'bold', marginTop: '5px'}}>Zwe Htet Naing</div>
-                    <div style={{fontSize:'11px', fontWeight:'bold'}}>( OASIS )</div>
+                    <div style={{fontSize:'13px', fontWeight:'bold', marginTop: '8px'}}>Zwe Htet Naing</div>
+                    <div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div>
                   </div>
                 </div>
-                <p style={{fontSize:'13px', fontWeight:'bold', marginTop:'5px', marginLeft:'15px'}}>Thanks for your business!</p>
+                <p style={{fontSize:'15px', fontWeight:'bold', marginTop:'10px', marginLeft:'20px'}}>Thanks for your business!</p>
                 <div className="footer-graphic"><div className="bot-lime"></div><div className="bot-black"></div></div>
               </div>
             </div>
@@ -195,46 +203,34 @@ const App = () => {
   );
 };
 
-const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
-  const tAmt = data.totalAmount || 0;
-  const disc = data.discount || "";
-  const getDVal = () => {
-    if (!disc) return 0;
-    const clean = String(disc).replace(/,/g, '');
-    if (clean.includes('%')) {
-      return (tAmt * parseFloat(clean.replace('%', ''))) / 100;
-    }
-    return parseFloat(clean) || 0;
-  };
-  return (
-    <div style={{...styles.a4Sheet, margin: '20px auto', minWidth: '210mm'}}>
-      <div style={styles.header}>
-        <div style={styles.headerLeft}><img src={OasisLogo} alt="Logo" style={styles.logoImage} /><div style={styles.bizInfo}><div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div><p style={{fontSize:'13px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales and Services</p><p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p><p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p></div></div>
-        <div style={styles.headerRight}><div className="top-design-container"><div className="top-black-shape"></div><div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div></div><div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div><div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div></div>
-      </div>
-      <table className="excel-table">
-        <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
-        <tbody>{data.rows.map((row, i) => {
-            const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
-            return (<tr key={i}><td style={{textAlign:'center', fontSize:'11px'}}>{i+1}</td><td style={{padding:'0 8px', fontSize:'11px'}}>{row.desc}</td><td style={{textAlign:'center', fontSize:'11px'}}>{row.unit}</td><td style={{textAlign:'center', fontSize:'11px'}}>{row.qty}</td><td style={{textAlign:'center', fontSize:'11px'}}>{row.price}</td><td style={{textAlign:'right', paddingRight:'10px', fontSize:'11px'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td></tr>)
-          })}</tbody>
-      </table>
-      <div style={styles.footerFlex}>
-        <div style={styles.customerArea}><p style={{fontSize:'13px'}}><strong>Customer :</strong> {data.customer.name}</p><p style={{fontSize:'13px'}}><strong>Contact :</strong> {data.customer.phone}</p><p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p></div>
-        <div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{tAmt.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <span>{disc}</span></div><div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div>
-      </div>
-      <div style={styles.signatureArea}><div style={styles.sigBox}><div style={{color:'#1e40af', fontSize:'20px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div><div style={styles.sigLine}></div><div style={{fontSize:'12px', fontWeight:'bold', marginTop: '5px'}}>Zwe Htet Naing</div><div style={{fontSize:'11px', fontWeight:'bold'}}>( OASIS )</div></div></div>
-      <div className="footer-graphic" style={{marginTop:'auto', paddingTop:'30px'}}><div className="bot-lime"></div><div className="bot-black"></div></div>
+const InvoiceReadOnly = ({ data, styles, OasisLogo }) => (
+  <div style={{...styles.a4Sheet, margin: '20px auto', minWidth: '210mm'}}>
+    <div style={styles.header}>
+      <div style={styles.headerLeft}><img src={OasisLogo} alt="Logo" style={styles.logoImage} /><div style={styles.bizInfo}><div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'30px', margin:'0 0 0 15px', color:'#231f20'}}>( OASIS )</h1></div><p style={{fontSize:'16px', color:'#8ce100', fontWeight:'bold', margin:'5px 0'}}>Repair, Sales and Services</p><p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Yangon</p><p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839</p></div></div>
+      <div style={styles.headerRight}><div className="top-design-container"><div className="top-black-shape"></div><div className="top-lime-shape"><span className="invoice-text">INVOICE</span></div></div><div style={styles.invNoBox}>INV NO: {data.invoiceNo}</div><div style={styles.dateBox}>Date: {data.createdAt?.toDate().toLocaleDateString()}</div></div>
     </div>
-  );
-};
+    <table className="excel-table">
+      <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
+      <tbody>{data.rows.map((row, i) => {
+          const rowTotal = (parseFloat(row.qty||0)*parseFloat(String(row.price||0).replace(/,/g,'')));
+          return (<tr key={i}><td style={{textAlign:'center', fontSize:'12px'}}>{i+1}</td><td style={{padding:'0 10px', fontSize:'12px'}}>{row.desc}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.unit}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.qty}</td><td style={{textAlign:'center', fontSize:'12px'}}>{row.price}</td><td style={{textAlign:'right', paddingRight:'10px', fontSize:'12px'}}>{rowTotal > 0 ? rowTotal.toLocaleString() : ""}</td></tr>)
+        })}</tbody>
+    </table>
+    <div style={styles.footerFlex}>
+      <div style={styles.customerArea}><p style={{fontSize:'14px'}}><strong>Customer Name :</strong> {data.customer.name}</p><p style={{fontSize:'14px'}}><strong>Contact No. :</strong> {data.customer.phone}</p><p style={{fontSize:'14px'}}><strong>Address :</strong> {data.customer.address}</p></div>
+      <div style={styles.summaryArea}><div style={{...styles.sRow, background:'#8ce100', color:'#000'}}>Total Amount <span>{data.totalAmount.toLocaleString()}</span></div><div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <span>{data.discount}</span></div><div style={{...styles.sRow, background:'#8ce100', color:'#000', fontWeight:'bold'}}>Balance <span>{data.balance.toLocaleString()}</span></div></div>
+    </div>
+    <div style={styles.signatureArea}><div style={styles.sigBox}><div style={{color:'#1e40af', fontSize:'22px', fontFamily:'cursive', marginBottom:'12px'}}>Zwe</div><div style={styles.sigLine}></div><div style={{fontSize:'14px', fontWeight:'bold', marginTop: '8px'}}>Zwe Htet Naing</div><div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div></div></div>
+    <div className="footer-graphic" style={{marginTop:'auto', paddingTop:'30px'}}><div className="bot-lime"></div><div className="bot-black"></div></div>
+  </div>
+);
 
 const LoginSection = ({ onLogin }) => {
   const [showPass, setShowPass] = useState(false);
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   return (
-    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
+    <div style={styles.loginBg}><div style={styles.loginCard}><img src={OasisLogo} alt="Logo" style={styles.loginLogo} /><h2 style={{color: '#231f20', marginBottom: '5px'}}>Ko Htay Aung ( OASIS )</h2><p style={{fontSize: '11px', color: '#8ce100', fontWeight: 'bold', marginBottom: '20px'}}>Repair, Sales & Service</p><input placeholder="Username" style={styles.loginInput} onChange={(e) => setUser(e.target.value)} /><div style={{ position: 'relative', width: '100%', marginBottom: '20px' }}><input type={showPass ? "text" : "password"} placeholder="Password" style={{...styles.loginInput, marginBottom: 0, paddingRight: '40px'}} onChange={(e) => setPass(e.target.value)} /><span style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer' }} onClick={() => setShowPass(!showPass)}>{showPass ? "👁️" : "🙈"}</span></div><button onClick={() => { if(user === "Oasis" && pass === "ZweHNaing@2026") onLogin(); }} style={{...styles.saveBtn, background:'#8ce100', width:'100%', color: 'white'}}>Login</button></div></div>
   );
 };
 
@@ -249,34 +245,34 @@ const styles = {
   invoiceOuter: { width: 'fit-content', margin: '0 auto' },
   a4Sheet: { width: '210mm', minHeight: '297mm', padding: '10mm 15mm 10mm 15mm', backgroundColor: 'white', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxSizing: 'border-box' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '15px' },
-  headerLeft: { display: 'flex', gap: '12px', alignItems: 'center', flex: 1 },
-  headerRight: { textAlign: 'right', width: '280px' },
-  logoImage: { width: '80px', height: '80px', objectFit: 'cover' },
-  headerSmallText: { fontSize: '10.5px', margin: '2px 0', color: '#555', fontWeight:'bold', maxWidth: '450px' },
-  invNoBox: { background: '#231f20', color: 'white', padding: '5px 12px', fontSize:'12px', fontWeight:'bold', marginTop:'8px', display: 'inline-block' },
-  dateBox: { fontSize:'11px', color:'#777', marginTop:'4px', fontWeight:'bold' },
-  cellInput: { width: '100%', height: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '11px', background: 'transparent' },
-  cellInputCenter: { width: '100%', height: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '11px', background: 'transparent' },
-  footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '15px' },
-  customerArea: { flex: 1.5 },
-  fRow: { display: 'flex', alignItems: 'center', marginBottom: '4px', fontSize: '12px' },
-  fLabel: { width: '100px', fontWeight: 'bold' },
-  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', fontSize:'12px' },
-  summaryArea: { width: '240px', border: '1.5px solid #000' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '6px 10px', borderBottom: '1.5px solid #000', fontSize:'12px' },
-  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000', fontSize:'12px' },
-  signatureArea: { marginTop: '20px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
-  sigBox: { textAlign: 'center', width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
-  sigLine: { borderTop: '1.5px solid #000', width: '100%' },
-  btnCenter: { textAlign:'center', marginTop:'15px', paddingBottom:'40px' },
-  saveBtn: { padding: '10px 35px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold', fontSize:'14px' },
-  dashboardArea: { padding: '30px', maxWidth:'1000px', margin:'0 auto' },
-  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' },
-  hCard: { background: 'white', padding: '15px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
+  headerLeft: { display: 'flex', gap: '15px', alignItems: 'center', flex: 1 },
+  headerRight: { textAlign: 'right', width: '320px' },
+  logoImage: { width: '90px', height: '90px', objectFit: 'cover' },
+  headerSmallText: { fontSize: '11px', margin: '2px 0', color: '#555', fontWeight:'bold', maxWidth: '450px' },
+  invNoBox: { background: '#231f20', color: 'white', padding: '5px 15px', fontSize:'13px', fontWeight:'bold', marginTop:'10px', display: 'inline-block' },
+  dateBox: { fontSize:'11px', color:'#777', marginTop:'5px', fontWeight:'bold' },
+  cellInput: { width: '100%', height: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '13px', background: 'transparent' },
+  cellInputCenter: { width: '100%', height: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px', background: 'transparent' },
+  footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '20px' },
+  customerArea: { flex: 1.5, display: 'flex', flexDirection: 'column', justifyContent: 'center' },
+  fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px', fontSize: '14px' },
+  fLabel: { width: '120px', fontWeight: 'bold' },
+  footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', outline:'none', flex: 1, marginRight: '20px', fontSize:'14px', background: 'transparent', paddingBottom: '2px' },
+  summaryArea: { width: '260px', border: '1.5px solid #000' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1.5px solid #000', fontSize:'13px', alignItems: 'center' },
+  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', color: '#000', fontSize:'13px' },
+  signatureArea: { marginTop: '30px', display: 'flex', justifyContent: 'flex-end', paddingRight:'40px' },
+  sigBox: { textAlign: 'center', width: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
+  sigLine: { borderTop: '2.5px solid #000', width: '100%' },
+  btnCenter: { textAlign:'center', marginTop:'20px', paddingBottom:'50px' },
+  saveBtn: { padding: '12px 40px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight:'bold' },
+  dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
+  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
+  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
   loginBg: { height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4' },
-  loginCard: { background:'white', padding:'35px', borderRadius:'15px', textAlign:'center', width: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
-  loginLogo: { width: '90px', height: '90px', borderRadius: '50%', border: '2px solid #8ce100', marginBottom: '12px', objectFit: 'cover' },
-  loginInput: { display:'block', margin:'15px auto', padding:'10px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box', fontSize:'14px' }
+  loginCard: { background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width: '380px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' },
+  loginLogo: { width: '100px', height: '100px', borderRadius: '50%', border: '2px solid #8ce100', marginBottom: '15px', objectFit: 'cover' },
+  loginInput: { display:'block', margin:'15px auto', padding:'12px', width:'100%', borderRadius:'8px', border:'1px solid #ccc', outline: 'none', boxSizing: 'border-box' }
 };
 
 export default App;

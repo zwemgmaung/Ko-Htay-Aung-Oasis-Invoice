@@ -16,6 +16,14 @@ const App = () => {
   const [discount, setDiscount] = useState("");
   const [rows, setRows] = useState(Array.from({ length: 14 }, (_, i) => ({ id: i + 1, desc: "", unit: "", qty: "", price: "" })));
 
+  // ✨ လက်နဲ့ ချုံ့ချဲ့လို့ရအောင် meta tag ကို အတင်းထည့်ပေးတဲ့ logic ပါ ကိုကို
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="viewport"]');
+    if (meta) {
+      meta.setAttribute('content', 'width=device-width, initial-scale=1.0, user-scalable=yes');
+    }
+  }, []);
+
   useEffect(() => {
     const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -68,12 +76,18 @@ const App = () => {
     if (!invoiceRef.current) return;
     try {
       await addDoc(collection(db, "invoices"), { invoiceNo, customer, rows, totalAmount, discount, balance, createdAt: serverTimestamp() });
-      const canvas = await html2canvas(invoiceRef.current, { scale: 3, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(invoiceRef.current, { 
+        scale: 3, 
+        useCORS: true, 
+        backgroundColor: "#ffffff",
+        windowWidth: 850 // ✨ JPEG ထွက်ရင် ဘောင်မကျော်အောင် width ကို ကန့်သတ်ထားပါတယ်
+      });
+      const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       const link = document.createElement('a');
       link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 1.0);
+      link.href = dataUrl;
       link.click();
-      alert("သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
+      alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
   };
 
@@ -82,14 +96,12 @@ const App = () => {
   return (
     <div style={styles.appContainer}>
       <style>{`
-        /* ✨ လက်နဲ့ ချဲ့ကြည့်လို့ရအောင် viewport control လုပ်ထားပါတယ် */
-        @viewport { width: device-width; zoom: 1.0; }
-        .excel-table { width: 850px; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; margin-bottom: 0; }
+        .excel-table { width: 750px; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; margin: 0; }
         .excel-table td { border: 1.5px solid #000; padding: 0; height: 35px; vertical-align: middle; }
         .th-lime { background-color: #8ce100; color: #fff; border: 1.5px solid #000; padding: 8px; font-size: 13px; font-weight: bold; text-align: center; }
         .th-black { background-color: #231f20; color: #fff; border: 1.5px solid #000; padding: 8px; font-size: 13px; text-align: center; }
         .cell-container { display: flex; align-items: center; height: 100%; width: 100%; overflow: hidden; }
-        .invoice-scroll-area { width: 100%; overflow-x: auto; padding: 20px 0; -webkit-overflow-scrolling: touch; }
+        .invoice-scroll-area { width: 100%; overflow-x: auto; padding: 20px 10px; background: #f4f7f6; }
       `}</style>
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
@@ -102,81 +114,77 @@ const App = () => {
       <div style={{ marginTop: '70px' }}>
         {activeTab === 'invoice' ? (
           <div className="invoice-scroll-area">
-            <div style={styles.invoiceOuter}>
-              <div ref={invoiceRef} style={styles.a4Sheet}>
-                {/* Header Section */}
-                <div style={styles.header}>
-                  <div style={styles.headerLeft}>
-                    <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
-                    <div style={styles.bizInfo}>
-                      <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'24px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'24px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
-                      <p style={{fontSize:'14px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
-                      <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
-                      <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
-                    </div>
-                  </div>
-                  <div style={styles.headerRight}>
-                    <div style={styles.topLimeBox}>INVOICE</div>
-                    <div style={styles.invNoBox}>INV NO: {invoiceNo}</div>
-                    <div style={styles.dateBox}>Date: {new Date().toLocaleDateString()}</div>
+            <div ref={invoiceRef} style={styles.a4Sheet}>
+              {/* Header */}
+              <div style={styles.header}>
+                <div style={styles.headerLeft}>
+                  <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
+                  <div style={styles.bizInfo}>
+                    <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
+                    <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
+                    <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
+                    <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                   </div>
                 </div>
-
-                {/* ✨ Table Width Fixed for Scrolling */}
-                <table className="excel-table">
-                  <thead>
-                    <tr>
-                      <th className="th-black" style={{width: '45px'}}>No.</th>
-                      <th className="th-lime" style={{width: '380px'}}>Item description</th>
-                      <th className="th-black" style={{width: '75px'}}>Unit</th>
-                      <th className="th-lime" style={{width: '75px'}}>Qty</th>
-                      <th className="th-black" style={{width: '120px'}}>Price</th>
-                      <th className="th-lime" style={{width: '155px'}}>Total Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row, i) => (
-                      <tr key={i}>
-                        <td style={{textAlign:'center', fontSize:'13px', fontWeight:'bold'}}>{i+1}</td>
-                        <td><div className="cell-container"><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></div></td>
-                        <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></div></td>
-                        <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></div></td>
-                        <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></div></td>
-                        <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>
-                          <div className="cell-container" style={{justifyContent:'flex-end'}}>{calculateTotal(row.qty, row.price) > 0 ? calculateTotal(row.qty, row.price).toLocaleString() : ""}</div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
-                {/* Footer Section - ✨ Aligned to Total Price column */}
-                <div style={styles.footerFlex}>
-                  <div style={styles.customerArea}>
-                    <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
-                    <div style={styles.fRow}><span style={styles.fLabel}>Contact No.</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} /></div>
-                    <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
-                  </div>
-                  <div style={styles.summaryArea}>
-                    <div style={{...styles.sRow, background:'#8ce100', borderBottom:'1px solid #000'}}>Total Amount <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
-                    <div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
-                    <div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold'}}>Balance <span>{balance.toLocaleString()}</span></div>
-                  </div>
-                </div>
-
-                <div style={styles.signatureArea}>
-                  <div style={styles.sigBox}>
-                    <div style={{color:'#1e40af', fontSize:'22px', fontFamily:'cursive', marginBottom:'12px'}}>Zwe</div>
-                    <div style={styles.sigLine}></div>
-                    <div style={{fontSize:'14px', fontWeight:'bold', marginTop: '8px'}}>Zwe Htet Naing</div>
-                    <div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div>
-                  </div>
-                </div>
-                <p style={{fontSize:'14px', fontWeight:'bold', marginTop:'10px', marginLeft:'15px'}}>Thanks for your business!</p>
-                <div style={styles.bottomGraphic}>
-                  <div style={styles.botLime}></div><div style={styles.botBlack}></div>
+                <div style={styles.headerRight}>
+                  <div style={styles.topLimeBox}>INVOICE</div>
+                  <div style={styles.invNoBox}>INV NO: {invoiceNo}</div>
+                  <div style={styles.dateBox}>Date: {new Date().toLocaleDateString()}</div>
                 </div>
               </div>
+
+              {/* Table - Width 750px strictly */}
+              <table className="excel-table">
+                <thead>
+                  <tr>
+                    <th className="th-black" style={{width: '40px'}}>No.</th>
+                    <th className="th-lime" style={{width: '320px'}}>Item description</th>
+                    <th className="th-black" style={{width: '70px'}}>Unit</th>
+                    <th className="th-lime" style={{width: '70px'}}>Qty</th>
+                    <th className="th-black" style={{width: '100px'}}>Price</th>
+                    <th className="th-lime" style={{width: '150px'}}>Total Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => (
+                    <tr key={i}>
+                      <td style={{textAlign:'center', fontSize:'13px'}}>{i+1}</td>
+                      <td><div className="cell-container"><input style={styles.cellInput} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></div></td>
+                      <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></div></td>
+                      <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></div></td>
+                      <td><div className="cell-container"><input style={styles.cellInputCenter} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></div></td>
+                      <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold'}}>
+                        <div className="cell-container" style={{justifyContent:'flex-end'}}>{calculateTotal(row.qty, row.price) > 0 ? calculateTotal(row.qty, row.price).toLocaleString() : ""}</div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Footer Aligned to Table */}
+              <div style={styles.footerFlex}>
+                <div style={styles.customerArea}>
+                  <div style={styles.fRow}><span style={styles.fLabel}>Customer Name</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, name:e.target.value})} /></div>
+                  <div style={styles.fRow}><span style={styles.fLabel}>Contact No.</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, phone:e.target.value})} /></div>
+                  <div style={styles.fRow}><span style={styles.fLabel}>Address</span> : <input style={styles.footerIn} onChange={e=>setCustomer({...customer, address:e.target.value})} /></div>
+                </div>
+                <div style={styles.summaryArea}>
+                  <div style={{...styles.sRow, background:'#8ce100'}}>Total Amount <span style={{fontWeight:'bold'}}>{totalAmount.toLocaleString()}</span></div>
+                  <div style={{...styles.sRow, background:'#231f20', color:'#fff'}}>Discount <input style={{...styles.sInput, color:'#fff'}} value={discount} onChange={e=>setDiscount(formatComma(e.target.value))} /></div>
+                  <div style={{...styles.sRow, background:'#8ce100', fontWeight:'bold', borderBottom:'none'}}>Balance <span>{balance.toLocaleString()}</span></div>
+                </div>
+              </div>
+
+              <div style={styles.signatureArea}>
+                <div style={styles.sigBox}>
+                  <div style={{color:'#1e40af', fontSize:'22px', fontFamily:'cursive', marginBottom:'10px'}}>Zwe</div>
+                  <div style={styles.sigLine}></div>
+                  <div style={{fontSize:'14px', fontWeight:'bold', marginTop: '8px'}}>Zwe Htet Naing</div>
+                  <div style={{fontSize:'12px', fontWeight:'bold'}}>( OASIS )</div>
+                </div>
+              </div>
+              <p style={{fontSize:'13px', fontWeight:'bold', marginTop:'15px'}}>Thanks for your business!</p>
+              <div style={styles.bottomGraphic}><div style={styles.botLime}></div><div style={styles.botBlack}></div></div>
             </div>
             <div style={styles.btnCenter}><button onClick={handleSaveAndCapture} style={styles.saveBtn}>SAVE & DOWNLOAD JPEG</button></div>
           </div>
@@ -187,6 +195,7 @@ const App = () => {
           </div>
         )}
       </div>
+      {/* Modal and Login Section same as before */}
     </div>
   );
 };
@@ -198,37 +207,33 @@ const styles = {
   navBtn: { background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontWeight:'bold' },
   navBtnActive: { background: 'none', border: 'none', color: 'white', cursor: 'pointer', fontWeight:'bold', borderBottom:'3px solid #8ce100' },
   logoutBtn: { position:'absolute', right:'10px', background:'#dc2626', color:'white', border:'none', padding:'6px 12px', borderRadius:'5px', fontSize:'11px' },
-  invoiceOuter: { width: '900px', margin: '0 auto' },
-  a4Sheet: { width: '850px', minHeight: '1150px', padding: '20px 30px', backgroundColor: 'white', display: 'flex', flexDirection: 'column', position: 'relative', boxSizing: 'border-box' },
+  a4Sheet: { width: '800px', minHeight: '1100px', padding: '30px', backgroundColor: 'white', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', margin: '0 auto', boxShadow: '0 0 20px rgba(0,0,0,0.1)' },
   header: { display: 'flex', justifyContent: 'space-between', marginBottom: '20px' },
   headerLeft: { display: 'flex', gap: '15px', alignItems: 'center', flex: 1 },
   headerRight: { textAlign: 'right', width: '250px' },
-  logoImage: { width: '90px', height: '90px', objectFit: 'cover' },
+  logoImage: { width: '85px', height: '85px', objectFit: 'cover' },
   headerSmallText: { fontSize: '11px', margin: '2px 0', color: '#555', fontWeight:'bold' },
-  topLimeBox: { background:'#8ce100', color:'white', padding:'8px', fontSize:'22px', fontWeight:'bold', textAlign:'center', marginBottom:'10px' },
+  topLimeBox: { background:'#8ce100', color:'white', padding:'8px', fontSize:'20px', fontWeight:'bold', textAlign:'center', marginBottom:'10px' },
   invNoBox: { background:'#231f20', color:'white', padding:'5px', fontSize:'12px', display:'inline-block' },
-  dateBox: { fontSize:'12px', marginTop:'5px' },
+  dateBox: { fontSize:'11px', marginTop:'5px' },
   cellInput: { width: '100%', border: 'none', padding: '0 8px', outline: 'none', fontSize: '13px' },
   cellInputCenter: { width: '100%', border: 'none', textAlign: 'center', outline: 'none', fontSize: '13px' },
   footerFlex: { display: 'flex', justifyContent: 'space-between', marginTop: '20px' },
   customerArea: { flex: 1, paddingTop: '10px' },
-  fRow: { display: 'flex', alignItems: 'center', marginBottom: '10px' },
-  fLabel: { width: '120px', fontWeight: 'bold', fontSize: '13px' },
-  footerIn: { border:'none', borderBottom:'1px solid #8ce100', flex: 1, marginRight: '30px', fontSize: '13px', outline:'none' },
-  summaryArea: { width: '275px', border: '1.5px solid #000' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '14px', alignItems: 'center' },
-  sInput: { width: '100px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'14px' },
-  signatureArea: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end', paddingRight:'40px' },
+  fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px' },
+  fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
+  footerIn: { border:'none', borderBottom:'1px solid #8ce100', flex: 1, marginRight: '20px', fontSize: '13px', outline:'none' },
+  summaryArea: { width: '260px', border: '1.5px solid #000' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000' },
+  sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'13px' },
+  signatureArea: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '220px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
   sigLine: { borderTop: '2px solid #000', width: '100%' },
-  bottomGraphic: { marginTop: 'auto', position: 'relative', height: '60px' },
-  botLime: { position: 'absolute', bottom: '15px', right: 0, width: '400px', height: '30px', background: '#8ce100', clipPath: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' },
-  botBlack: { position: 'absolute', bottom: 0, right: 0, width: '450px', height: '30px', background: '#231f20', clipPath: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' },
+  bottomGraphic: { marginTop: 'auto', position: 'relative', height: '60px', width: '750px' },
+  botLime: { position: 'absolute', bottom: '15px', right: 0, width: '350px', height: '25px', background: '#8ce100', clip-path: 'polygon(10% 0, 100% 0, 100% 100%, 0 100%)' },
+  botBlack: { position: 'absolute', bottom: 0, right: 0, width: '400px', height: '25px', background: '#231f20', clip-path: 'polygon(8% 0, 100% 0, 100% 100%, 0 100%)' },
   btnCenter: { textAlign:'center', padding: '30px' },
-  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold', cursor:'pointer' },
-  dashboardArea: { padding: '40px' },
-  historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
-  hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer' },
+  saveBtn: { background:'#8ce100', color:'white', border:'none', padding:'15px 40px', borderRadius:'8px', fontWeight:'bold' }
 };
 
 const LoginSection = ({ onLogin }) => {
@@ -238,7 +243,7 @@ const LoginSection = ({ onLogin }) => {
   return (
     <div style={{height:'100vh', display:'flex', justifyContent:'center', alignItems:'center', background:'#f0fdf4'}}>
       <div style={{background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width:'350px', boxShadow:'0 10px 25px rgba(0,0,0,0.1)'}}>
-        <img src={OasisLogo} style={{width:'100px', borderRadius:'50%', marginBottom:'15px'}} alt="logo" />
+        <img src={OasisLogo} style={{width:'90px', borderRadius:'50%', marginBottom:'15px'}} alt="logo" />
         <h2 style={{marginBottom:'20px'}}>Ko Htay Aung ( OASIS )</h2>
         <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box'}} onChange={e=>setUser(e.target.value)} />
         <div style={{position:'relative', marginBottom:'20px'}}>
@@ -252,4 +257,3 @@ const LoginSection = ({ onLogin }) => {
 };
 
 export default App;
-          

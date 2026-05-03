@@ -88,7 +88,6 @@ const App = () => {
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       
-      // ✨ ဖုန်း App တွေမှာပါ Download လုပ်လို့ရအောင် Blob format ပြောင်းပြီး ဆွဲခိုင်းထားပါတယ် ကိုကို
       fetch(dataUrl)
         .then(res => res.blob())
         .then(blob => {
@@ -120,8 +119,10 @@ const App = () => {
         .th-lime { background-color: #8ce100; color: #fff; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
-        .cell-input { width: 100%; height: 33px; line-height: 33px; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; font-weight: bold; margin: 0; padding: 0; }
-        .cell-input-desc { width: 100%; height: 33px; line-height: 33px; border: none; text-align: left; padding-left: 10px; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; margin: 0; padding-top: 0; padding-bottom: 0; }
+        
+        /* ✨ JPEG ထဲမှာ စာသားတွေ အလယ်တည့်တည့်ဖြစ်အောင် padding ကို အသေချထားပါတယ်ရှင် */
+        .cell-input { width: 100%; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; font-weight: bold; margin: 0; padding: 8px 0; }
+        .cell-input-desc { width: 100%; border: none; text-align: left; padding-left: 10px; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; margin: 0; padding: 8px 0 8px 10px; }
       `}</style>
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
@@ -176,12 +177,12 @@ const App = () => {
                     const rowTotal = calculateTotal(row.qty, row.price);
                     return (
                       <tr key={i}>
-                        <td style={{fontSize:'13px', fontWeight:'bold'}}>{i+1}</td>
+                        <td style={{fontSize:'13px', fontWeight:'bold', paddingTop:'8px', paddingBottom:'8px'}}>{i+1}</td>
                         <td><input className="cell-input-desc" value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
                         <td><input className="cell-input" value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
                         <td><input className="cell-input" value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
                         <td><input className="cell-input" value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                        <td style={{paddingRight:'8px', textAlign:'right', fontSize:'13px', fontWeight:'bold'}}>
+                        <td style={{paddingRight:'8px', textAlign:'right', fontSize:'13px', fontWeight:'bold', paddingTop:'8px', paddingBottom:'8px'}}>
                           {rowTotal > 0 ? rowTotal.toLocaleString() : ""}
                         </td>
                       </tr>
@@ -225,11 +226,10 @@ const App = () => {
         )}
       </div>
 
-      {/* ✨ History ကို ဘယ်/ညာ အပြည့်အဝ ဆွဲကြည့်လို့ရအောင်နဲ့ margin ညှိထားပါတယ် */}
       {selectedInvoice && (
         <div style={styles.modalOverlay} onClick={() => setSelectedInvoice(null)}>
-          <div style={styles.modalContentWrapper}>
-            <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+          <div style={{ display: 'inline-block', textAlign: 'left', minWidth: '794px' }}>
+            <div style={{ textAlign: 'center' }}>
               <button style={styles.closeModalBtn} onClick={() => setSelectedInvoice(null)}>CLOSE [X]</button>
             </div>
             <div onClick={e => e.stopPropagation()} style={{boxShadow: '0 0 30px rgba(0,0,0,0.5)', background: 'white'}}>
@@ -264,7 +264,7 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
         <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
         <tbody>{data.rows.map((r, i) => {
             const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
-            return (<tr key={i}><td>{i+1}</td><td style={{textAlign:'left', paddingLeft:'10px'}}>{r.desc}</td><td>{r.unit}</td><td>{r.qty}</td><td>{r.price}</td><td style={{textAlign:'right', paddingRight:'8px'}}>{rt > 0 ? rt.toLocaleString() : ""}</td></tr>)
+            return (<tr key={i}><td style={{textAlign:'center', fontSize:'13px', paddingTop:'8px', paddingBottom:'8px'}}>{i+1}</td><td style={{textAlign:'left', paddingLeft:'10px', paddingTop:'8px', paddingBottom:'8px', fontSize:'12px'}}>{r.desc}</td><td style={{textAlign:'center', fontSize:'12px', paddingTop:'8px', paddingBottom:'8px'}}>{r.unit}</td><td style={{textAlign:'center', fontSize:'12px', paddingTop:'8px', paddingBottom:'8px'}}>{r.qty}</td><td style={{textAlign:'center', fontSize:'12px', paddingTop:'8px', paddingBottom:'8px'}}>{r.price}</td><td style={{textAlign:'right', paddingRight:'8px', fontSize:'13px', fontWeight:'bold', paddingTop:'8px', paddingBottom:'8px'}}>{rt > 0 ? rt.toLocaleString() : ""}</td></tr>)
           })}</tbody>
       </table>
       <div style={styles.footerFlex}>
@@ -333,12 +333,10 @@ const styles = {
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-  
-  /* ✨ Modal ရဲ့ CSS အသစ် (ဘယ်ညာ အစွန်းမပြတ်အောင် ပြင်ဆင်ထားသည်) */
   modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflow: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y pinch-zoom', display: 'block' },
   modalContentWrapper: { width: 'fit-content', margin: '0 auto', padding: '40px 20px', display: 'flex', flexDirection: 'column' },
   closeModalBtn: { padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-block' }
 };
 
 export default App;
-                                         
+          

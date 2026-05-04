@@ -120,7 +120,7 @@ const App = () => {
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
       `}</style>
-                  <div className="no-print" style={styles.navBar}>
+        <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
           <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.navBtnActive : styles.navBtn}>HISTORY</button>
@@ -172,22 +172,22 @@ const App = () => {
                   {rows.map((row, i) => {
                     const rowTotal = calculateTotal(row.qty, row.price);
                     return (
-                      <tr key={i} style={{height: '35px'}}>
-                        {/* ✨ အကွက်တိုင်းမှာ lineHeight:'35px' ထည့်လိုက်ပါပြီ။ ဒါမှ Jpeg မှာ အပေါ်မကပ်ဘဲ အလယ်တည့်တည့်ဖြစ်မှာပါ */}
-                        <td style={{textAlign:'center', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{i+1}</td>
-                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
-                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'left', paddingLeft:'10px', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', margin:0, padding:0}} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} />
+                      <tr key={i}>
+                        {/* ✨ Padding အပေါ်အောက် 8px ပေးလိုက်ခြင်းဖြင့် html2canvas မှာပါ အလယ်တည့်တည့် ဖြစ်သွားပါမည် */}
+                        <td style={{textAlign:'center', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', padding:'8px 0'}}>{i+1}</td>
+                        <td style={{boxSizing:'border-box', padding:0}}>
+                          <input style={{width:'100%', border:'none', textAlign:'left', padding:'8px 0 8px 10px', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', margin:0}} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} />
                         </td>
-                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
-                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} />
+                        <td style={{boxSizing:'border-box', padding:0}}>
+                          <input style={{width:'100%', border:'none', textAlign:'center', padding:'8px 0', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0}} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} />
                         </td>
-                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
-                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} />
+                        <td style={{boxSizing:'border-box', padding:0}}>
+                          <input style={{width:'100%', border:'none', textAlign:'center', padding:'8px 0', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0}} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} />
                         </td>
-                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
-                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} />
+                        <td style={{boxSizing:'border-box', padding:0}}>
+                          <input style={{width:'100%', border:'none', textAlign:'center', padding:'8px 0', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0}} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} />
                         </td>
-                        <td style={{paddingRight:'10px', textAlign:'right', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>
+                        <td style={{textAlign:'right', padding:'8px 10px 8px 0', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>
                           {rowTotal > 0 ? rowTotal.toLocaleString() : ""}
                         </td>
                       </tr>
@@ -270,14 +270,14 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
         <tbody>{data.rows.map((r, i) => {
             const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
             return (
-              <tr key={i} style={{height: '35px'}}>
-                {/* ✨ History ထဲက Invoice တွေမှာလည်း အလယ်တည့်တည့်ကျအောင် lineHeight: '35px' ထည့်ထားပါတယ် */}
-                <td style={{textAlign:'center', fontSize:'13px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{i+1}</td>
-                <td style={{textAlign:'left', paddingLeft:'10px', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.desc}</td>
-                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.unit}</td>
-                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.qty}</td>
-                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.price}</td>
-                <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
+              <tr key={i}>
+                {/* ✨ History ထဲက ဇယားကွက်တွေမှာလည်း အပေါ်အောက် 8px Padding နဲ့ အတိအကျ ညှိပေးထားပါတယ် */}
+                <td style={{textAlign:'center', fontSize:'13px', boxSizing:'border-box', padding:'8px 0'}}>{i+1}</td>
+                <td style={{textAlign:'left', padding:'8px 0 8px 10px', fontSize:'12px', boxSizing:'border-box'}}>{r.desc}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', padding:'8px 0'}}>{r.unit}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', padding:'8px 0'}}>{r.qty}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', padding:'8px 0'}}>{r.price}</td>
+                <td style={{textAlign:'right', padding:'8px 10px 8px 0', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
               </tr>
             )
           })}</tbody>

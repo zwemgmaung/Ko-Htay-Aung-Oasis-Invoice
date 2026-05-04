@@ -88,21 +88,13 @@ const App = () => {
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       
-      fetch(dataUrl)
-        .then(res => res.blob())
-        .then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.style.display = 'none';
-          link.href = url;
-          link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-          setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-          }, 100);
-        });
+      // ✨ App တွေကနေ Auto Download တန်းဆွဲအောင် မူလနည်းလမ်းကို ပြန်သုံးထားပါတယ်
+      const link = document.createElement('a');
+      link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
         
       alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
@@ -115,14 +107,14 @@ const App = () => {
       <style>{`
         body { margin: 0; padding: 0; }
         .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
-        .excel-table th, .excel-table td { border: 1.5px solid #000; height: 35px; vertical-align: middle; text-align: center; padding: 0; }
+        .excel-table th, .excel-table td { border: 1.5px solid #000; height: 35px; vertical-align: middle; text-align: center; padding: 0; margin: 0; }
         .th-lime { background-color: #8ce100; color: #fff; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
         
-        /* ✨ JPEG ထဲမှာ စာသားတွေ အလယ်တည့်တည့်ဖြစ်အောင် padding ကို အသေချထားပါတယ်ရှင် */
-        .cell-input { width: 100%; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; font-weight: bold; margin: 0; padding: 8px 0; }
-        .cell-input-desc { width: 100%; border: none; text-align: left; padding-left: 10px; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; margin: 0; padding: 8px 0 8px 10px; }
+        /* ✨ JPEG ထဲမှာ စာသားတွေ အလယ်တည့်တည့်ဖြစ်အောင် line-height ကို td အမြင့်အတိုင်း (35px) အတိအကျ ချထားပါတယ်ရှင် */
+        .cell-input { width: 100%; height: 35px; line-height: 35px; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; font-weight: bold; margin: 0; padding: 0; }
+        .cell-input-desc { width: 100%; height: 35px; line-height: 35px; border: none; text-align: left; padding: 0 0 0 10px; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; margin: 0; }
       `}</style>
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
@@ -177,12 +169,13 @@ const App = () => {
                     const rowTotal = calculateTotal(row.qty, row.price);
                     return (
                       <tr key={i}>
-                        <td style={{fontSize:'13px', fontWeight:'bold', paddingTop:'8px', paddingBottom:'8px'}}>{i+1}</td>
-                        <td><input className="cell-input-desc" value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                        <td><input className="cell-input" value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                        <td><input className="cell-input" value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                        <td><input className="cell-input" value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                        <td style={{paddingRight:'8px', textAlign:'right', fontSize:'13px', fontWeight:'bold', paddingTop:'8px', paddingBottom:'8px'}}>
+                        {/* ✨ Padding တွေဖယ်ပြီး height:35px နဲ့ verticalAlign:middle ကို သေချာချထားပါတယ် */}
+                        <td style={{fontSize:'13px', fontWeight:'bold', height:'35px', verticalAlign:'middle'}}>{i+1}</td>
+                        <td style={{height:'35px'}}><input className="cell-input-desc" value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                        <td style={{height:'35px'}}><input className="cell-input" value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                        <td style={{height:'35px'}}><input className="cell-input" value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
+                        <td style={{height:'35px'}}><input className="cell-input" value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
+                        <td style={{paddingRight:'8px', textAlign:'right', fontSize:'13px', fontWeight:'bold', height:'35px', verticalAlign:'middle'}}>
                           {rowTotal > 0 ? rowTotal.toLocaleString() : ""}
                         </td>
                       </tr>
@@ -264,7 +257,17 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
         <thead><tr><th className="th-black">No.</th><th className="th-lime">Description</th><th className="th-black">Unit</th><th className="th-lime">Qty</th><th className="th-black">Price</th><th className="th-lime">Total</th></tr></thead>
         <tbody>{data.rows.map((r, i) => {
             const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
-            return (<tr key={i}><td style={{textAlign:'center', fontSize:'13px', paddingTop:'8px', paddingBottom:'8px'}}>{i+1}</td><td style={{textAlign:'left', paddingLeft:'10px', paddingTop:'8px', paddingBottom:'8px', fontSize:'12px'}}>{r.desc}</td><td style={{textAlign:'center', fontSize:'12px', paddingTop:'8px', paddingBottom:'8px'}}>{r.unit}</td><td style={{textAlign:'center', fontSize:'12px', paddingTop:'8px', paddingBottom:'8px'}}>{r.qty}</td><td style={{textAlign:'center', fontSize:'12px', paddingTop:'8px', paddingBottom:'8px'}}>{r.price}</td><td style={{textAlign:'right', paddingRight:'8px', fontSize:'13px', fontWeight:'bold', paddingTop:'8px', paddingBottom:'8px'}}>{rt > 0 ? rt.toLocaleString() : ""}</td></tr>)
+            return (
+              <tr key={i}>
+                {/* ✨ Padding တွေဖယ်ပြီး height:35px နဲ့ verticalAlign:middle ကို သေချာချထားပါတယ် */}
+                <td style={{textAlign:'center', fontSize:'13px', height:'35px', verticalAlign:'middle'}}>{i+1}</td>
+                <td style={{textAlign:'left', paddingLeft:'10px', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.desc}</td>
+                <td style={{textAlign:'center', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.unit}</td>
+                <td style={{textAlign:'center', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.qty}</td>
+                <td style={{textAlign:'center', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.price}</td>
+                <td style={{textAlign:'right', paddingRight:'8px', fontSize:'13px', fontWeight:'bold', height:'35px', verticalAlign:'middle'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
+              </tr>
+            )
           })}</tbody>
       </table>
       <div style={styles.footerFlex}>

@@ -137,7 +137,7 @@ const App = () => {
                   <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                   <div style={styles.bizInfo}>
                     <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
-                    <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
+                    <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Services</p>
                     <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
                     <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                   </div>
@@ -301,7 +301,7 @@ const LoginSection = ({ onLogin }) => {
       <div style={{background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width:'350px', boxShadow:'0 10px 25px rgba(0,0,0,0.1)'}}>
         <img src={OasisLogo} style={{width:'90px', borderRadius:'50%', marginBottom:'15px', border:'2px solid #8ce100', objectFit:'cover'}} alt="logo" />
         <h2 style={{marginBottom:'5px', color:'#231f20'}}>Ko Htay Aung ( OASIS )</h2>
-        <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', marginBottom:'25px'}}>Refrigerator, Air-Conditioning Repair, Sales & Service</p>
+        <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', marginBottom:'25px'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Service</p>
         <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box', fontSize:'14px'}} onChange={e=>setU(e.target.value)} />
         <div style={{position:'relative', marginBottom:'20px'}}>
           <input type={s ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box', fontSize:'14px'}} onChange={e=>setP(e.target.value)} />

@@ -115,13 +115,12 @@ const App = () => {
       <style>{`
         body { margin: 0; padding: 0; }
         .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
-        /* ✨ Padding ကြောင့် ဇယားမစောင်းအောင် box-sizing: border-box ကို အသေချထားပါတယ် ကိုကို */
         .excel-table th, .excel-table td { border: 1.5px solid #000; height: 35px; vertical-align: middle; text-align: center; padding: 0; margin: 0; box-sizing: border-box; }
         .th-lime { background-color: #8ce100; color: #fff; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
       `}</style>
-      <div className="no-print" style={styles.navBar}>
+                  <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
           <button onClick={() => setActiveTab('dashboard')} style={activeTab === 'dashboard' ? styles.navBtnActive : styles.navBtn}>HISTORY</button>
@@ -173,14 +172,22 @@ const App = () => {
                   {rows.map((row, i) => {
                     const rowTotal = calculateTotal(row.qty, row.price);
                     return (
-                      <tr key={i}>
-                        <td style={{fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>{i+1}</td>
-                        {/* ✨ Inline Style နဲ့ Center အတိအကျချထားပြီး boxSizing ထည့်ထားပါတယ် */}
-                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'left', paddingLeft:'10px', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', margin:0}} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                        <td style={{paddingRight:'10px', textAlign:'right', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>
+                      <tr key={i} style={{height: '35px'}}>
+                        {/* ✨ အကွက်တိုင်းမှာ lineHeight:'35px' ထည့်လိုက်ပါပြီ။ ဒါမှ Jpeg မှာ အပေါ်မကပ်ဘဲ အလယ်တည့်တည့်ဖြစ်မှာပါ */}
+                        <td style={{textAlign:'center', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{i+1}</td>
+                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
+                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'left', paddingLeft:'10px', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', margin:0, padding:0}} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} />
+                        </td>
+                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
+                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} />
+                        </td>
+                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
+                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} />
+                        </td>
+                        <td style={{boxSizing:'border-box', height:'35px', padding:0}}>
+                          <input style={{width:'100%', height:'35px', lineHeight:'35px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} />
+                        </td>
+                        <td style={{paddingRight:'10px', textAlign:'right', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>
                           {rowTotal > 0 ? rowTotal.toLocaleString() : ""}
                         </td>
                       </tr>
@@ -263,13 +270,14 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
         <tbody>{data.rows.map((r, i) => {
             const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
             return (
-              <tr key={i}>
-                <td style={{textAlign:'center', fontSize:'13px', boxSizing:'border-box'}}>{i+1}</td>
-                <td style={{textAlign:'left', paddingLeft:'10px', fontSize:'12px', boxSizing:'border-box'}}>{r.desc}</td>
-                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box'}}>{r.unit}</td>
-                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box'}}>{r.qty}</td>
-                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box'}}>{r.price}</td>
-                <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
+              <tr key={i} style={{height: '35px'}}>
+                {/* ✨ History ထဲက Invoice တွေမှာလည်း အလယ်တည့်တည့်ကျအောင် lineHeight: '35px' ထည့်ထားပါတယ် */}
+                <td style={{textAlign:'center', fontSize:'13px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{i+1}</td>
+                <td style={{textAlign:'left', paddingLeft:'10px', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.desc}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.unit}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.qty}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{r.price}</td>
+                <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', height:'35px', lineHeight:'35px'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
               </tr>
             )
           })}</tbody>
@@ -326,8 +334,8 @@ const styles = {
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px' },
   fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
   footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '30px', fontSize: '13px', outline:'none', background: 'transparent', padding: '0 0 2px 0', margin: 0, lineHeight: '18px' },
-  summaryArea: { width: '260px', border: '1.5px solid #000', boxSizing: 'border-box' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000', fontWeight:'bold', boxSizing: 'border-box' },
+  summaryArea: { width: '260px', border: '1.5px solid #000' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000', fontWeight:'bold' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'13px', padding: 0, margin: 0, lineHeight: '18px' },
   signatureArea: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
@@ -346,4 +354,4 @@ const styles = {
 };
 
 export default App;
-                                                         
+          

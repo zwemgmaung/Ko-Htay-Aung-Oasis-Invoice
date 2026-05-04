@@ -88,13 +88,21 @@ const App = () => {
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       
-      // ✨ App တွေကနေ Auto Download တန်းဆွဲအောင် မူလနည်းလမ်းကို ပြန်သုံးထားပါတယ်
-      const link = document.createElement('a');
-      link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      fetch(dataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.style.display = 'none';
+          link.href = url;
+          link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+        });
         
       alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
@@ -107,14 +115,11 @@ const App = () => {
       <style>{`
         body { margin: 0; padding: 0; }
         .excel-table { width: 100%; border-collapse: collapse; border: 1.5px solid #000; table-layout: fixed; }
-        .excel-table th, .excel-table td { border: 1.5px solid #000; height: 35px; vertical-align: middle; text-align: center; padding: 0; margin: 0; }
+        /* ✨ Padding ကြောင့် ဇယားမစောင်းအောင် box-sizing: border-box ကို အသေချထားပါတယ် ကိုကို */
+        .excel-table th, .excel-table td { border: 1.5px solid #000; height: 35px; vertical-align: middle; text-align: center; padding: 0; margin: 0; box-sizing: border-box; }
         .th-lime { background-color: #8ce100; color: #fff; font-size: 13px; font-weight: bold; }
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
-        
-        /* ✨ JPEG ထဲမှာ စာသားတွေ အလယ်တည့်တည့်ဖြစ်အောင် line-height ကို td အမြင့်အတိုင်း (35px) အတိအကျ ချထားပါတယ်ရှင် */
-        .cell-input { width: 100%; height: 35px; line-height: 35px; border: none; text-align: center; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; font-weight: bold; margin: 0; padding: 0; }
-        .cell-input-desc { width: 100%; height: 35px; line-height: 35px; border: none; text-align: left; padding: 0 0 0 10px; outline: none; font-size: 13px; background: transparent; box-sizing: border-box; margin: 0; }
       `}</style>
       <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
@@ -133,7 +138,7 @@ const App = () => {
                   <img src={OasisLogo} alt="Logo" style={styles.logoImage} />
                   <div style={styles.bizInfo}>
                     <div style={{display:'flex', alignItems:'baseline'}}><span style={{fontSize:'22px', fontWeight:'bold'}}>Ko Htay Aung</span><h1 style={{fontSize:'22px', margin:'0 0 0 10px', color:'#231f20'}}>( OASIS )</h1></div>
-                    <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales and Services</p>
+                    <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', margin:'3px 0'}}>Refrigerator, Air-Conditioning Repair, Sales and Services</p>
                     <p style={styles.headerSmallText}>Address : B-97/7, Nawaday Shophouse, Hlaingtharyar Township, Yangon</p>
                     <p style={styles.headerSmallText}>Contact No. : 09-974 989 754, 09-421 097 839, 09-767 954 493</p>
                   </div>
@@ -169,13 +174,13 @@ const App = () => {
                     const rowTotal = calculateTotal(row.qty, row.price);
                     return (
                       <tr key={i}>
-                        {/* ✨ Padding တွေဖယ်ပြီး height:35px နဲ့ verticalAlign:middle ကို သေချာချထားပါတယ် */}
-                        <td style={{fontSize:'13px', fontWeight:'bold', height:'35px', verticalAlign:'middle'}}>{i+1}</td>
-                        <td style={{height:'35px'}}><input className="cell-input-desc" value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
-                        <td style={{height:'35px'}}><input className="cell-input" value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
-                        <td style={{height:'35px'}}><input className="cell-input" value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
-                        <td style={{height:'35px'}}><input className="cell-input" value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
-                        <td style={{paddingRight:'8px', textAlign:'right', fontSize:'13px', fontWeight:'bold', height:'35px', verticalAlign:'middle'}}>
+                        <td style={{fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>{i+1}</td>
+                        {/* ✨ Inline Style နဲ့ Center အတိအကျချထားပြီး boxSizing ထည့်ထားပါတယ် */}
+                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'left', paddingLeft:'10px', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', margin:0}} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} /></td>
+                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.unit} onChange={e=>updateRow(i, 'unit', e.target.value)} /></td>
+                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.qty} onChange={e=>updateRow(i, 'qty', e.target.value)} /></td>
+                        <td style={{boxSizing:'border-box'}}><input style={{width:'100%', height:'33px', border:'none', textAlign:'center', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', fontWeight:'bold', margin:0, padding:0}} value={row.price} onChange={e=>updateRow(i, "price", e.target.value)} /></td>
+                        <td style={{paddingRight:'10px', textAlign:'right', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>
                           {rowTotal > 0 ? rowTotal.toLocaleString() : ""}
                         </td>
                       </tr>
@@ -259,13 +264,12 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
             const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
             return (
               <tr key={i}>
-                {/* ✨ Padding တွေဖယ်ပြီး height:35px နဲ့ verticalAlign:middle ကို သေချာချထားပါတယ် */}
-                <td style={{textAlign:'center', fontSize:'13px', height:'35px', verticalAlign:'middle'}}>{i+1}</td>
-                <td style={{textAlign:'left', paddingLeft:'10px', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.desc}</td>
-                <td style={{textAlign:'center', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.unit}</td>
-                <td style={{textAlign:'center', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.qty}</td>
-                <td style={{textAlign:'center', fontSize:'12px', height:'35px', verticalAlign:'middle'}}>{r.price}</td>
-                <td style={{textAlign:'right', paddingRight:'8px', fontSize:'13px', fontWeight:'bold', height:'35px', verticalAlign:'middle'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
+                <td style={{textAlign:'center', fontSize:'13px', boxSizing:'border-box'}}>{i+1}</td>
+                <td style={{textAlign:'left', paddingLeft:'10px', fontSize:'12px', boxSizing:'border-box'}}>{r.desc}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box'}}>{r.unit}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box'}}>{r.qty}</td>
+                <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box'}}>{r.price}</td>
+                <td style={{textAlign:'right', paddingRight:'10px', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box'}}>{rt > 0 ? rt.toLocaleString() : ""}</td>
               </tr>
             )
           })}</tbody>
@@ -289,7 +293,7 @@ const LoginSection = ({ onLogin }) => {
       <div style={{background:'white', padding:'40px', borderRadius:'15px', textAlign:'center', width:'350px', boxShadow:'0 10px 25px rgba(0,0,0,0.1)'}}>
         <img src={OasisLogo} style={{width:'90px', borderRadius:'50%', marginBottom:'15px', border:'2px solid #8ce100', objectFit:'cover'}} alt="logo" />
         <h2 style={{marginBottom:'5px', color:'#231f20'}}>Ko Htay Aung ( OASIS )</h2>
-        <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', marginBottom:'25px'}}>Refrigerator, Washing Machine & Air-Conditioning Repair, Sales & Service</p>
+        <p style={{fontSize:'12px', color:'#8ce100', fontWeight:'bold', marginBottom:'25px'}}>Refrigerator, Air-Conditioning Repair, Sales & Service</p>
         <input placeholder="Username" style={{display:'block', width:'100%', padding:'12px', marginBottom:'15px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box', fontSize:'14px'}} onChange={e=>setU(e.target.value)} />
         <div style={{position:'relative', marginBottom:'20px'}}>
           <input type={s ? "text" : "password"} placeholder="Password" style={{width:'100%', padding:'12px', borderRadius:'8px', border:'1px solid #ccc', boxSizing:'border-box', fontSize:'14px'}} onChange={e=>setP(e.target.value)} />
@@ -322,8 +326,8 @@ const styles = {
   fRow: { display: 'flex', alignItems: 'center', marginBottom: '8px' },
   fLabel: { width: '110px', fontWeight: 'bold', fontSize: '13px' },
   footerIn: { border:'none', borderBottom:'1.5px solid #8ce100', flex: 1, marginRight: '30px', fontSize: '13px', outline:'none', background: 'transparent', padding: '0 0 2px 0', margin: 0, lineHeight: '18px' },
-  summaryArea: { width: '260px', border: '1.5px solid #000' },
-  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000', fontWeight:'bold' },
+  summaryArea: { width: '260px', border: '1.5px solid #000', boxSizing: 'border-box' },
+  sRow: { display: 'flex', justifyContent: 'space-between', padding: '8px 12px', fontSize: '13px', alignItems: 'center', borderBottom: '1.5px solid #000', fontWeight:'bold', boxSizing: 'border-box' },
   sInput: { width: '80px', textAlign: 'right', border: 'none', outline: 'none', background:'transparent', fontWeight:'bold', fontSize:'13px', padding: 0, margin: 0, lineHeight: '18px' },
   signatureArea: { marginTop: '40px', display: 'flex', justifyContent: 'flex-end', paddingRight:'20px' },
   sigBox: { textAlign: 'center', width: '200px', display: 'flex', flexDirection: 'column', alignItems: 'center' },
@@ -342,4 +346,4 @@ const styles = {
 };
 
 export default App;
-          
+                                                         

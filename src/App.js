@@ -26,20 +26,29 @@ const App = () => {
     meta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
   }, []);
 
+  // ✨ INV No. ကို ပိုမိုစိတ်ချရအောင် Auto တွက်ချက်ပေးမယ့် Logic အသစ်ဖြစ်ပါတယ်
   useEffect(() => {
     const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setHistory(data);
-      if (data.length === 0) setInvoiceNo("001");
-      else {
-        const lastInv = data[0].invoiceNo || "0";
-        const nextNum = parseInt(lastInv.replace(/[^0-9]/g, '')) + 1;
+      
+      if (data.length === 0) {
+        setInvoiceNo("001"); // Database မှာ data မရှိသေးရင် 001 auto ပြပေးမယ်
+      } else {
+        // နောက်ဆုံးထွက်ထားတဲ့ Invoice နံပါတ်ကို ယူပြီး +1 တိုးပေးမယ်
+        const lastInv = data[0].invoiceNo ? String(data[0].invoiceNo) : "0";
+        const cleanNum = parseInt(lastInv.replace(/[^0-9]/g, ''));
+        const nextNum = isNaN(cleanNum) ? 1 : cleanNum + 1;
         setInvoiceNo(nextNum.toString().padStart(3, '0'));
       }
+    }, (error) => {
+      console.error("Firebase Error:", error);
+      // တကယ်လို့ တစ်ခုခုကြောင့် တက်မလာရင်လည်း ကွက်လပ်မဖြစ်အောင် 001 ထားပေးမယ်
+      if(!invoiceNo) setInvoiceNo("001");
     });
     return () => unsub();
-  }, []);
+  }, [invoiceNo]);
 
   const formatComma = (val) => {
     if (!val) return "";
@@ -88,21 +97,12 @@ const App = () => {
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       
-      fetch(dataUrl)
-        .then(res => res.blob())
-        .then(blob => {
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.style.display = 'none';
-          link.href = url;
-          link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-          setTimeout(() => {
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-          }, 100);
-        });
+      const link = document.createElement('a');
+      link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
         
       alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
@@ -120,6 +120,7 @@ const App = () => {
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
       `}</style>
+
         <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
@@ -173,7 +174,6 @@ const App = () => {
                     const rowTotal = calculateTotal(row.qty, row.price);
                     return (
                       <tr key={i}>
-                        {/* ✨ Padding အပေါ်အောက် 8px ပေးလိုက်ခြင်းဖြင့် html2canvas မှာပါ အလယ်တည့်တည့် ဖြစ်သွားပါမည် */}
                         <td style={{textAlign:'center', fontSize:'13px', fontWeight:'bold', boxSizing:'border-box', padding:'8px 0'}}>{i+1}</td>
                         <td style={{boxSizing:'border-box', padding:0}}>
                           <input style={{width:'100%', border:'none', textAlign:'left', padding:'8px 0 8px 10px', outline:'none', fontSize:'13px', background:'transparent', boxSizing:'border-box', margin:0}} value={row.desc} onChange={e=>updateRow(i, 'desc', e.target.value)} />
@@ -271,7 +271,6 @@ const InvoiceReadOnly = ({ data, styles, OasisLogo }) => {
             const rt = (parseFloat(r.qty||0)*parseFloat(String(r.price||0).replace(/,/g,'')));
             return (
               <tr key={i}>
-                {/* ✨ History ထဲက ဇယားကွက်တွေမှာလည်း အပေါ်အောက် 8px Padding နဲ့ အတိအကျ ညှိပေးထားပါတယ် */}
                 <td style={{textAlign:'center', fontSize:'13px', boxSizing:'border-box', padding:'8px 0'}}>{i+1}</td>
                 <td style={{textAlign:'left', padding:'8px 0 8px 10px', fontSize:'12px', boxSizing:'border-box'}}>{r.desc}</td>
                 <td style={{textAlign:'center', fontSize:'12px', boxSizing:'border-box', padding:'8px 0'}}>{r.unit}</td>
@@ -354,4 +353,4 @@ const styles = {
 };
 
 export default App;
-          
+                

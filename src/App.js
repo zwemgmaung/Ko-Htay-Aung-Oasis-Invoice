@@ -26,29 +26,20 @@ const App = () => {
     meta.content = "width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes";
   }, []);
 
-  // ✨ INV No. ကို ပိုမိုစိတ်ချရအောင် Auto တွက်ချက်ပေးမယ့် Logic အသစ်ဖြစ်ပါတယ်
   useEffect(() => {
     const q = query(collection(db, "invoices"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
       const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setHistory(data);
-      
-      if (data.length === 0) {
-        setInvoiceNo("001"); // Database မှာ data မရှိသေးရင် 001 auto ပြပေးမယ်
-      } else {
-        // နောက်ဆုံးထွက်ထားတဲ့ Invoice နံပါတ်ကို ယူပြီး +1 တိုးပေးမယ်
-        const lastInv = data[0].invoiceNo ? String(data[0].invoiceNo) : "0";
-        const cleanNum = parseInt(lastInv.replace(/[^0-9]/g, ''));
-        const nextNum = isNaN(cleanNum) ? 1 : cleanNum + 1;
+      if (data.length === 0) setInvoiceNo("001");
+      else {
+        const lastInv = data[0].invoiceNo || "0";
+        const nextNum = parseInt(lastInv.replace(/[^0-9]/g, '')) + 1;
         setInvoiceNo(nextNum.toString().padStart(3, '0'));
       }
-    }, (error) => {
-      console.error("Firebase Error:", error);
-      // တကယ်လို့ တစ်ခုခုကြောင့် တက်မလာရင်လည်း ကွက်လပ်မဖြစ်အောင် 001 ထားပေးမယ်
-      if(!invoiceNo) setInvoiceNo("001");
     });
     return () => unsub();
-  }, [invoiceNo]);
+  }, []);
 
   const formatComma = (val) => {
     if (!val) return "";
@@ -97,12 +88,21 @@ const App = () => {
       });
       const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
       
-      const link = document.createElement('a');
-      link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      fetch(dataUrl)
+        .then(res => res.blob())
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.style.display = 'none';
+          link.href = url;
+          link.download = `Oasis_Invoice_${invoiceNo}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+          setTimeout(() => {
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+          }, 100);
+        });
         
       alert("Gallery ထဲသို့ သိမ်းဆည်းပြီးပါပြီ ကိုကို!");
     } catch (e) { alert("Error: " + e.message); }
@@ -120,7 +120,6 @@ const App = () => {
         .th-black { background-color: #231f20; color: #fff; font-size: 13px; }
         .invoice-scroll-area { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 20px 10px; box-sizing: border-box; }
       `}</style>
-
         <div className="no-print" style={styles.navBar}>
         <div style={styles.navLinks}>
           <button onClick={() => setActiveTab('invoice')} style={activeTab === 'invoice' ? styles.navBtnActive : styles.navBtn}>NEW INVOICE</button>
@@ -347,10 +346,10 @@ const styles = {
   dashboardArea: { padding: '40px', maxWidth:'1000px', margin:'0 auto' },
   historyGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' },
   hCard: { background: 'white', padding: '20px', borderRadius: '10px', borderLeft: '8px solid #8ce100', cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' },
-  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflow: 'auto', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x pan-y pinch-zoom', display: 'block' },
-  modalContentWrapper: { width: 'fit-content', margin: '0 auto', padding: '40px 20px', display: 'flex', flexDirection: 'column' },
-  closeModalBtn: { padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', display: 'inline-block' }
+  modalOverlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, overflow: 'auto', display: 'block', textAlign: 'center' },
+  modalContentWrapper: { width: 'fit-content', margin: '40px auto', display: 'flex', flexDirection: 'column' },
+  closeModalBtn: { padding: '10px 30px', background: '#dc2626', color: 'white', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer', marginBottom: '10px' }
 };
 
 export default App;
-                
+          
